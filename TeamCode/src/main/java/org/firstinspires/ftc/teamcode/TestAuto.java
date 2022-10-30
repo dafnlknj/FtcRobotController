@@ -1,13 +1,14 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.bots.FSMBot;
 import org.firstinspires.ftc.teamcode.bots.SnarmBot;
 
 @Autonomous(name="Test Robot", group="Tests")
-
+@Disabled
 public class TestAuto extends LinearOpMode {
 
     protected FSMBot robot = new FSMBot(this); //replace FourWheelDriveBot with whichever Bot is required

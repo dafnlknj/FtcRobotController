@@ -1,12 +1,14 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.bots.RumbleBot;
 
 @TeleOp(name = "Manual Drive (Red)")
+@Disabled
 public class ManualDriveRed extends LinearOpMode {
 
     //ElapsedTime runtime = new ElapsedTime();    // Use to determine when end game is starting.

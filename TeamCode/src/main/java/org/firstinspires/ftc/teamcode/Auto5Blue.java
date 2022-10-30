@@ -1,13 +1,14 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.bots.CameraBot;
 import org.firstinspires.ftc.teamcode.bots.SnarmBot;
 
 @Autonomous(name="Auto 5 (BLUE Warehouse)", group="Autos")
-
+@Disabled
 public class Auto5Blue extends LinearOpMode {
 
     protected CameraBot robot = new CameraBot(this);
