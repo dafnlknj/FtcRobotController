@@ -6,13 +6,14 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.bots.FourWheelDriveBot;
 import org.firstinspires.ftc.teamcode.bots.LEDBot;
+import org.firstinspires.ftc.teamcode.bots.OdometryBot;
 
 @TeleOp(name = "Manual Drive (Demo)")
 public class ManualDriveDemo extends LinearOpMode {
 
     //ElapsedTime runtime = new ElapsedTime();    // Use to determine when end game is starting.
 
-    private FourWheelDriveBot robot = new FourWheelDriveBot(this);
+    private OdometryBot robot = new OdometryBot(this);
     //int count = 0;
 
     @Override

@@ -24,7 +24,6 @@ public class ManualDriveBlue extends LinearOpMode {
         robot.setDropHeight(0);
         robot.init(hardwareMap);
         robot.isAutoStart = false;
-        robot.odometryRaise.setPosition(0.65);
         robot.goToIntakePosition(3);
         waitForStart();
         while (opModeIsActive()) {

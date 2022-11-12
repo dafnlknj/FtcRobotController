@@ -122,10 +122,10 @@ public class FourWheelDriveBot extends BotBot{
         }
         //RobotLog.d(String.format("multiplier: %f speeds 0: %f", multiplier, speeds[0]));
         // apply the calculated values to the motors.
-        leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        leftRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        leftRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         leftFront.setPower(speeds[0] * multiplier);
         rightFront.setPower(speeds[1] * multiplier * highRPMToLowRPM);
         leftRear.setPower(speeds[2] * multiplier * highRPMToLowRPM);
@@ -180,7 +180,7 @@ public class FourWheelDriveBot extends BotBot{
 
     protected void onTick(){
         //driveByHand(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x, gamepad1.left_stick_button);
-        //super.onTick();
+        super.onTick();
     }
 
     public void testOneMotor(DcMotor motor, double speed, int direction){
