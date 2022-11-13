@@ -151,46 +151,46 @@ public class NewDistanceSensorBot extends DuckBot {
         }
     }
 
-    public int autoGrabFreight(boolean fast, CameraBot.autoSide side1, CameraBot.autoSide side2, boolean drop) {
-        double drive;
-        double strafe;
-        double twist;
-        if (fast) {
-            drive = 0.15;
-            strafe = 0.08;
-            twist = 0;
-        } else {
-            drive = 0.09;
-            strafe = 0.06;
-            twist = 0;
-        }
-        switch (side1) {
-            case RED:
-                driveByVector(drive, strafe, -twist, 1);
-                break;
-            case BLUE:
-                driveByVector(drive, -strafe, twist, 1);
-                break;
-        }
-
-        waitOnSnarmState(SnarmState.FEEDING, 5000);
-
-        if (!drop) {
-            keepExtending = false;
-        }
-
-        RobotLog.d("intaking wait finished");
-        int distanceFromStart = Math.abs(horizontal.getCurrentPosition());
-        if (drop) {
-            driveAgainstWallWithEncodersVertical(DIRECTION_BACKWARD, side2, distanceFromStart + 3000, 500, 0);
-        }
-        RobotLog.d("drive finished");
-        leftFront.setPower(0);
-        rightFront.setPower(0);
-        leftRear.setPower(0);
-        rightRear.setPower(0);
-        return distanceFromStart;
-    }
+//    public int autoGrabFreight(boolean fast, CameraBot.autoSide side1, CameraBot.autoSide side2, boolean drop) {
+//        double drive;
+//        double strafe;
+//        double twist;
+//        if (fast) {
+//            drive = 0.15;
+//            strafe = 0.08;
+//            twist = 0;
+//        } else {
+//            drive = 0.09;
+//            strafe = 0.06;
+//            twist = 0;
+//        }
+//        switch (side1) {
+//            case RED:
+//                driveByVector(drive, strafe, -twist, 1);
+//                break;
+//            case BLUE:
+//                driveByVector(drive, -strafe, twist, 1);
+//                break;
+//        }
+//
+//        waitOnSnarmState(SnarmState.FEEDING, 5000);
+//
+//        if (!drop) {
+//            keepExtending = false;
+//        }
+//
+//        RobotLog.d("intaking wait finished");
+//        int distanceFromStart = Math.abs(horizontal.getCurrentPosition());
+//        if (drop) {
+//            driveAgainstWallWithEncodersVertical(DIRECTION_BACKWARD, side2, distanceFromStart + 3000, 500, 0);
+//        }
+//        RobotLog.d("drive finished");
+//        leftFront.setPower(0);
+//        rightFront.setPower(0);
+//        leftRear.setPower(0);
+//        rightRear.setPower(0);
+//        return distanceFromStart;
+//    }
 
 //    public void checkFreightInBox() {
 //        if (distanceBox < 5) {

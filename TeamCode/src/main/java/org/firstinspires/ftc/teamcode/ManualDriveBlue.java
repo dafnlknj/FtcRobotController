@@ -1,12 +1,14 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.bots.RumbleBot;
 
 @TeleOp(name = "Manual Drive (Blue)")
+@Disabled
 public class ManualDriveBlue extends LinearOpMode {
 
     //ElapsedTime runtime = new ElapsedTime();    // Use to determine when end game is starting.
@@ -22,7 +24,6 @@ public class ManualDriveBlue extends LinearOpMode {
         robot.setDropHeight(0);
         robot.init(hardwareMap);
         robot.isAutoStart = false;
-        robot.odometryRaise.setPosition(0.65);
         robot.goToIntakePosition(3);
         waitForStart();
         while (opModeIsActive()) {

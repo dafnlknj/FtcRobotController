@@ -1,13 +1,14 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.bots.FSMBot;
 import org.firstinspires.ftc.teamcode.bots.SnarmBot;
 
 @Autonomous(name="Test Robot", group="Tests")
-
+@Disabled
 public class TestAuto extends LinearOpMode {
 
     protected FSMBot robot = new FSMBot(this); //replace FourWheelDriveBot with whichever Bot is required
@@ -78,16 +79,16 @@ public class TestAuto extends LinearOpMode {
         robot.sleep(700);
         robot.controlCoreHex(0, 0);
         //lower odometry
-        robot.odometryRaise.setPosition(0.65);
-        robot.sleep(500);
-        //raise odometry
-        robot.odometryRaise.setPosition(0.88);
-        robot.sleep(500);
-        //lower odometry
-        robot.odometryRaise.setPosition(0.65);
-        robot.sleep(500);
-        //raise odometry
-        robot.odometryRaise.setPosition(0.88);
+//        robot.odometryRaise.setPosition(0.65);
+//        robot.sleep(500);
+//        //raise odometry
+//        robot.odometryRaise.setPosition(0.88);
+//        robot.sleep(500);
+//        //lower odometry
+//        robot.odometryRaise.setPosition(0.65);
+//        robot.sleep(500);
+//        //raise odometry
+//        robot.odometryRaise.setPosition(0.88);
         robot.sleep(500);
         //duck spinner blue
         robot.toggleSpinner(0.27, false);

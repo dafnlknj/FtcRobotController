@@ -1,12 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.bots.CameraBot;
 
 @Autonomous(name="Camera Test", group="Tests")
-
+@Disabled
 public class CameraTest extends LinearOpMode {
 
     protected CameraBot robot = new CameraBot(this);

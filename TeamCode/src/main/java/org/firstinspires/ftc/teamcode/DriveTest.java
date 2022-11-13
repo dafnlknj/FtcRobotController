@@ -1,12 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.bots.FSMBot;
 
 @Autonomous(name="Drive Test", group="Tests")
-
+@Disabled
 public class DriveTest extends LinearOpMode {
 
     protected FSMBot robot = new FSMBot(this);
