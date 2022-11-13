@@ -21,8 +21,6 @@
 
 package org.firstinspires.ftc.teamcode.bots;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
-
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -38,7 +36,7 @@ import org.openftc.easyopencv.OpenCvInternalCamera;
 import java.util.ArrayList;
 
 @Autonomous
-public class AprilTagBot extends FSMBot
+public class AprilTagBot extends OdometryBot
 {
     OpenCvCamera camera;
     AprilTagPipeline aprilTagDetectionPipeline;
@@ -51,7 +49,7 @@ public class AprilTagBot extends FSMBot
     double cy = 221.506;
 
     // UNITS ARE METERS
-    double tagsize = 0.166;
+    double tagsize = 0.166;//0.0470
 
      // Tag ID 0,1,2 from the 36h11 family
     int LEFT = 0;
@@ -66,6 +64,7 @@ public class AprilTagBot extends FSMBot
 
     @Override
     public void init(HardwareMap ahwMap) {
+        super.init(ahwMap);
         hwMap = ahwMap;
         initCamera();
     }
@@ -91,7 +90,7 @@ public class AprilTagBot extends FSMBot
             }
         });
 
-        telemetry.setMsTransmissionInterval(50);
+        //telemetry.setMsTransmissionInterval(50);
     }
 
     public int detect(){
@@ -111,43 +110,48 @@ public class AprilTagBot extends FSMBot
                     break;
                 }
             }
-
+            //telemetry updates
             if(tagFound)
             {
-                telemetry.addLine("Tag of interest is in sight!\n\nLocation data:");
-                telemetry.addLine(String.format("\nDetected tag ID=%d", tagOfInterest.id));
-                return tagOfInterest.id;
+                //telemetry.addLine("Tag of interest is in sight!");
+                //telemetry.addLine(String.format("id;", tagOfInterest.id));
             }
             else
             {
-                telemetry.addLine("Don't see tag of interest :(");
+                //telemetry.addLine("Don't see tag of interest :(");
                 if(tagOfInterest == null)
                 {
-                    telemetry.addLine("(The tag has never been seen)");
+                   // telemetry.addLine("(The tag has never been seen)");
                 }
                 else
                 {
-                    telemetry.addLine("\nBut we HAVE seen the tag before; last seen at:");
+                    //telemetry.addLine("\nBut we HAVE seen the tag before");
                 }
             }
 
         }
-        else // no tag
+        else // no tag telemetry updates
         {
-            telemetry.addLine("Don't see tag of interest :(");
+            //telemetry.addLine("Don't see tag of interest :(");
             if(tagOfInterest == null)
             {
-                telemetry.addLine("(The tag has never been seen)");
+               // telemetry.addLine("(The tag has never been seen)");
             }
             else
             {
-                telemetry.addLine("\nBut we HAVE seen the tag before; last seen at:");
+                //telemetry.addLine("\nBut we HAVE seen the tag before; last seen at:");
             }
 
         }
 
-        telemetry.update();
-        return 0;
+        //telemetry.update();
+        sleep(20);
+
+        if(tagOfInterest == null) {
+            tagOfInterest.id = 0;
+        }
+
+        return tagOfInterest.id;
     }
 
 }

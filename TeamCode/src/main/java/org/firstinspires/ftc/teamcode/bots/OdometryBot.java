@@ -462,11 +462,11 @@ public class OdometryBot extends GyroBot {
     protected void onTick(){
     //        RobotLog.d(String.format("Position, heading: %.2f, %.2f, %.2f", xBlue, yBlue, thetaDEG));
     //        RobotLog.d(String.format("v1: %d v2: %d h: %d", leftFront.getCurrentPosition(), rightFront.getCurrentPosition(), horizontal.getCurrentPosition()));
-        opMode.telemetry.addData("X:", xBlue);
-        opMode.telemetry.addData("Y:", yBlue);
-        opMode.telemetry.addData("Theta:", thetaDEG);
-        opMode.telemetry.addData("v1", leftFront.getCurrentPosition());
-        opMode.telemetry.addData("h", rightFront.getCurrentPosition());
+//        opMode.telemetry.addData("X:", xBlue);
+//        opMode.telemetry.addData("Y:", yBlue);
+//        opMode.telemetry.addData("Theta:", thetaDEG);
+//        opMode.telemetry.addData("v1", leftFront.getCurrentPosition());
+//        opMode.telemetry.addData("h", rightFront.getCurrentPosition());
         //outputEncoders();
         super.onTick();
         calculateCaseThree(leftFront.getCurrentPosition() - vLOffset, rightFront.getCurrentPosition() - hOffset, thetaDEG);

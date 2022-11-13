@@ -42,6 +42,45 @@ public class GyroBot extends FourWheelDriveBot {
         imu.initialize(parameters);
     }
 
+    public void driveByHandFieldCentric(double left_stick_x1, double left_stick_y1, double right_stick_x1, boolean button1, double left_stick_x2, double left_stick_y2, double right_stick_x2, boolean button2) {
+
+        double drive  = - left_stick_y1 - left_stick_y2;
+        double strafe = left_stick_x1 + left_stick_x2;
+        double twist  = right_stick_x1 + right_stick_x2;
+
+        timeSinceToggle5 = System.currentTimeMillis() - lastToggleDone5;
+        if (button1 || button2) {
+//            if (isSlow) {
+//                driveMultiplier = 0.85;
+//                isSlow = false;
+//                opMode.telemetry.addData("SLOW", driveMultiplier);
+//                lastToggleDone5 = System.currentTimeMillis();
+//                //RobotLog.d("robot not slow");
+//            } else if (!isSlow) {
+//                driveMultiplier = 0.95;
+//                isSlow = true;
+//                opMode.telemetry.addData("FAST", driveMultiplier);
+//                lastToggleDone5 = System.currentTimeMillis();
+//                //RobotLog.d("robot slow");
+//            }
+//            opMode.telemetry.update();
+            //RobotLog.d("stick button pressed");
+            driveMultiplier = 0.55;
+            opMode.telemetry.addData("FAST", driveMultiplier);
+        } else {
+            driveMultiplier = 0.5;
+            opMode.telemetry.addData("SLOW", driveMultiplier);
+        }
+
+        double angle = -getDeltaAngle();
+
+        double drive2 = Math.min(1.0, strafe*Math.sin(Math.toRadians(angle)) + drive*Math.cos(Math.toRadians(angle)));
+        double strafe2 = Math.min(1.0, strafe*Math.cos(Math.toRadians(angle)) - drive*Math.sin(Math.toRadians(angle)));
+
+        opMode.telemetry.update();
+        driveByVector(drive2, strafe2, twist, driveMultiplier);
+    }
+
     public void resetAngle() {
 
         Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);

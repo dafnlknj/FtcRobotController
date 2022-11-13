@@ -4,26 +4,45 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.bots.AprilTagBot;
 import org.firstinspires.ftc.teamcode.bots.FSMBot;
 
 @Autonomous(name="Auto Test", group="Tests")
-@Disabled
 public class AutoTest extends LinearOpMode {
 
-    protected FSMBot robot = new FSMBot(this);
+    protected AprilTagBot robot = new AprilTagBot(this);
 
     @Override
     public void runOpMode() {
         robot.init(hardwareMap);
-        robot.setElevationPosition(0.2);
-        robot.goToFlipperPosition(0);
-        robot.goToIntakePosition(2);
         waitForStart();
-        robot.isAutoStart = true;
+        int pos = robot.detect();
+        robot.driveToCoordinate(29000, -5000, 0, 750, 1);
+        robot.waitForCoordinateDrive();
+        robot.sleep(200);
+        robot.driveToCoordinate(29000, -19000, 0, 750, 1);
+        robot.waitForCoordinateDrive();
+        robot.sleep(1000);
+        robot.driveToCoordinate(29000, -9000, 0, 750, 1);
+        robot.waitForCoordinateDrive();
+        robot.sleep(200);
+        robot.driveToCoordinate(49000, -9000, 0, 750, 1);
+        robot.waitForCoordinateDrive();
+        robot.sleep(200);
+        robot.driveToCoordinate(49000, -50000, 0, 750, 1);
+        robot.waitForCoordinateDrive();
+        robot.sleep(200);
+        if (pos == 0) {
 
-        //robot.autoGrabFreight(0.2, robot.SIDE_BLUE);
-
-        robot.sleep(10000);
+        } else if (pos == 1) {
+            robot.driveToCoordinate(9000, -50000, 0, 750, 1);
+            robot.waitForCoordinateDrive();
+            robot.sleep(200);
+        } else {
+            robot.driveToCoordinate(-31000, -50000, 0, 750, 1);
+            robot.waitForCoordinateDrive();
+            robot.sleep(200);
+        }
     }
 }
 
