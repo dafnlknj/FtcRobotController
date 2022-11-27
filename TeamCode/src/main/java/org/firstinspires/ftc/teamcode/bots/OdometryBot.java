@@ -501,7 +501,7 @@ public class OdometryBot extends GyroBot {
     public void driveToCoordinateUpdate(double xTarget, double yTarget, double targetTheta, int tolerance, double magnitude) {
         MiniPID drivePID = new MiniPID(0.05, 0, 0);//i: 0.006 d: 0.06
         MiniPID twistPID = new MiniPID(0.025, 0.005, 0.03);
-        drivePID.setOutputLimits(0.2);
+        drivePID.setOutputLimits(magnitude);
         twistPID.setOutputLimits(1);
         thetaDifference = targetTheta - thetaDEG;
         twist = - twistPID.getOutput(thetaDEG, targetTheta);

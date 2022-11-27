@@ -17,29 +17,29 @@ public class AutoTest extends LinearOpMode {
         robot.init(hardwareMap);
         waitForStart();
         int pos = robot.detect();
-        robot.driveToCoordinate(11000, -5000, 0, 750, 1);
+        robot.driveToCoordinate(12500, -5000, 0, 750, 0.2);
         robot.waitForCoordinateDrive();
         robot.sleep(200);
-        robot.driveToCoordinate(11000, -16000, 0, 750, 1);
+        robot.driveToCoordinate(12500, -16000, 0, 750, 0.2);
         robot.waitForCoordinateDrive();
         robot.sleep(1000);
-        robot.driveToCoordinate(11000, -9000, 0, 750, 1);
+        robot.driveToCoordinate(12500, -9000, 0, 750, 0.2);
         robot.waitForCoordinateDrive();
         robot.sleep(200);
-        robot.driveToCoordinate(31000, -9000, 0, 750, 1);
+        robot.driveToCoordinate(32000, -9000, 0, 750, 0.2);
         robot.waitForCoordinateDrive();
         robot.sleep(200);
-        robot.driveToCoordinate(31000, -41000, 0, 750, 1);
+        robot.driveToCoordinate(32000, -51000, 0, 750, 0.15);
         robot.waitForCoordinateDrive();
         robot.sleep(200);
         if (pos == 0) {
 
         } else if (pos == 1) {
-            robot.driveToCoordinate(-7000, -41000, 0, 750, 1);
+            robot.driveToCoordinate(-6000, -51000, 0, 750, 0.15);
             robot.waitForCoordinateDrive();
             robot.sleep(200);
         } else {
-            robot.driveToCoordinate(-46000, -40000, 0, 750, 1);
+            robot.driveToCoordinate(-45000, -50000, 0, 750, 0.15);
             robot.waitForCoordinateDrive();
             robot.sleep(200);
         }
