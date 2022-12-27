@@ -38,7 +38,7 @@ public class OdometryBot extends GyroBot {
     final int vRDirection = -1;
     final int hDirection = 1;
     final double diameter = 18971; // actually diameter
-    final double hDiameter = 11936; //radius of horizontal encoder
+    final double hDiameter = 1899; //radius of horizontal encoder
 
     double vLOffset, vROffset, hOffset = 0;
 
@@ -54,6 +54,7 @@ public class OdometryBot extends GyroBot {
     long startTime;
     long elapsedTime = 0;
     public boolean isCoordinateDriving = false;
+    public boolean isTurningInPlace = false;
 
     double globalTargetX = 0;
     double globalTargetY = 0;
@@ -283,9 +284,10 @@ public class OdometryBot extends GyroBot {
 
         //angleDEG = angleDEG + angleChange;
         //thetaDEG = angleDEG;
-        angleDEG = getDeltaAngle();
-        thetaDEG = getDeltaAngle();
-        angleChange = thetaDEG - previousThetaDEG;
+
+//        angleDEG = getDeltaAngle();
+//        thetaDEG = getDeltaAngle();
+        angleChange = angleDEG - previousThetaDEG;
 
         hError = (angleChange / 360) * (Math.PI * hDiameter);
 
@@ -304,7 +306,7 @@ public class OdometryBot extends GyroBot {
         previousVL = vL;
         //previousVR = vR;
         previousH = h;
-        previousThetaDEG = thetaDEG;
+        previousThetaDEG = angleDEG;
 
         return new double[]{xBlue, yBlue};
     }
@@ -462,16 +464,24 @@ public class OdometryBot extends GyroBot {
     protected void onTick(){
     //        RobotLog.d(String.format("Position, heading: %.2f, %.2f, %.2f", xBlue, yBlue, thetaDEG));
     //        RobotLog.d(String.format("v1: %d v2: %d h: %d", leftFront.getCurrentPosition(), rightFront.getCurrentPosition(), horizontal.getCurrentPosition()));
-        opMode.telemetry.addData("X:", xBlue);
-        opMode.telemetry.addData("Y:", yBlue);
-        opMode.telemetry.addData("Theta:", thetaDEG);
-        opMode.telemetry.addData("v1", leftFront.getCurrentPosition());
-        opMode.telemetry.addData("h", rightFront.getCurrentPosition());
+
+//        opMode.telemetry.addData("X:", xBlue);
+//        opMode.telemetry.addData("Y:", yBlue);
+//        opMode.telemetry.addData("Theta:", thetaDEG);
+//        opMode.telemetry.addData("v1", leftFront.getCurrentPosition());
+//        opMode.telemetry.addData("h", rightFront.getCurrentPosition());
+//        opMode.telemetry.addData("h diameter", (int)((thetaDEG*360)/(rightFront.getCurrentPosition() * Math.PI)));
+//        opMode.telemetry.update();
+
         //outputEncoders();
         super.onTick();
+        thetaDEG = -getDeltaAngle();
         calculateCaseThree(-leftFront.getCurrentPosition() - vLOffset, rightFront.getCurrentPosition() - hOffset, thetaDEG);
         if (isCoordinateDriving) {
             driveToCoordinateUpdate(globalTargetX, globalTargetY, globalTargetTheta, globalTolerance, globalMagnitude);
+        }
+        if (isTurningInPlace) {
+            turnInPlaceUpdate(globalTargetX, globalTargetY, globalTargetTheta, globalTolerance, globalMagnitude);
         }
     }
 
@@ -502,9 +512,9 @@ public class OdometryBot extends GyroBot {
         MiniPID drivePID = new MiniPID(0.05, 0, 0);//i: 0.006 d: 0.06
         MiniPID twistPID = new MiniPID(0.025, 0.005, 0.03);
         drivePID.setOutputLimits(magnitude);
-        twistPID.setOutputLimits(1);
+        twistPID.setOutputLimits(magnitude);
         thetaDifference = targetTheta - thetaDEG;
-        twist = - twistPID.getOutput(thetaDEG, targetTheta);
+        twist = twistPID.getOutput(thetaDEG, targetTheta);
         double rawDriveAngle = Math.toDegrees(Math.atan2(xTarget - xBlue, yTarget - yBlue));
         driveAngle = rawDriveAngle - thetaDEG;
         magnitude = Math.min(1.0, Math.abs(drivePID.getOutput(distanceToTarget/5000, 0))*2);
@@ -532,8 +542,60 @@ public class OdometryBot extends GyroBot {
         }
     }
 
+    public void turnInPlace(double targetTheta, int tolerance, double magnitude) {
+        distanceToTarget = 0;
+        RobotLog.d(String.format("BlueX: %f BlueY: %f Theta: %f", xBlue, yBlue, thetaDEG));
+        globalTargetX = xBlue;
+        globalTargetY = yBlue;
+        globalTargetTheta = targetTheta;
+        globalTolerance = tolerance;
+        globalMagnitude = magnitude;
+
+        isTurningInPlace = true;
+    }
+
+    public void turnInPlaceUpdate(double xTarget, double yTarget, double targetTheta, int tolerance, double magnitude) {
+        MiniPID drivePID = new MiniPID(0.05, 0, 0);//i: 0.006 d: 0.06
+        MiniPID twistPID = new MiniPID(0.025, 0.005, 0.03);
+        drivePID.setOutputLimits(magnitude);
+        twistPID.setOutputLimits(magnitude);
+        thetaDifference = targetTheta - thetaDEG;
+        twist = twistPID.getOutput(thetaDEG, targetTheta);
+        double rawDriveAngle = Math.toDegrees(Math.atan2(xTarget - xBlue, yTarget - yBlue));
+        driveAngle = rawDriveAngle - thetaDEG;
+        magnitude = Math.min(1.0, Math.abs(drivePID.getOutput(distanceToTarget/5000, 0))*2);
+        if (Math.abs(distanceToTarget) < 10000) {
+            magnitude = Math.max(0.05, Math.min(1.0, Math.abs(drivePID.getOutput(distanceToTarget/5000, 0))));
+        }
+        if (xBlue > xTarget) {
+            distanceToTarget = - Math.sqrt(Math.pow(xBlue - xTarget, 2) + Math.pow(yBlue - yTarget, 2));
+        } else {
+            distanceToTarget = Math.sqrt(Math.pow(xBlue - xTarget, 2) + Math.pow(yBlue - yTarget, 2));
+        }
+        drive = -(Math.cos(Math.toRadians(driveAngle)) * magnitude);
+        strafe = Math.sin(Math.toRadians(driveAngle)) * magnitude;
+
+        driveByVector(drive, -strafe, twist, 1);
+        RobotLog.d(String.format("BlueX: %f BlueY: %f Theta: %f Angle: %f Drive: %f Strafe: %f Twist: %f", xBlue, yBlue, thetaDEG, driveAngle, drive, strafe, twist));
+        RobotLog.d(String.format("Distance: %f Magnitude: %f", distanceToTarget, magnitude));
+
+        if ((xTarget + tolerance > xBlue) && (xTarget - tolerance < xBlue) && (yTarget + tolerance > yBlue) && (yTarget - tolerance < yBlue) && Math.abs(thetaDifference) < 2) {
+            isTurningInPlace = false;
+            driveByVector(0, 0, 0, 1);
+            RobotLog.d("TARGET REACHED");
+        } else {
+            isTurningInPlace = true;
+        }
+    }
+
     public void waitForCoordinateDrive() {
         while (opMode.opModeIsActive() && isCoordinateDriving) {
+            sleep(10);
+        }
+    }
+
+    public void waitForTurnInPlace() {
+        while (opMode.opModeIsActive() && isTurningInPlace) {
             sleep(10);
         }
     }
