@@ -3,11 +3,20 @@ package org.firstinspires.ftc.teamcode.bots;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 
 public class FlipperBot extends OdometryBot {
     public Servo flipper = null; //
     public Servo flipAngle = null; // range: 0.38-0.85
+    public Servo grabber = null;
+
+    final double grabberClosed = 0.6;
+    final double grabberOpened = 0.3;
+
+    boolean isGrabberOpen = true;
+
+    ElapsedTime grabberTimer = new ElapsedTime();
 
     public FlipperBot(LinearOpMode opMode) {
         super(opMode);
@@ -20,6 +29,8 @@ public class FlipperBot extends OdometryBot {
         flipper.setPosition(0.3);
         flipAngle = hwMap.get(Servo.class, "flipAngle");
         flipAngle.setPosition(0.6);
+        grabber = hwMap.get(Servo.class, "grabber");
+        grabber.setPosition(0.3);
     }
 
     public void controlFlipper(boolean up, boolean down) {
@@ -43,10 +54,24 @@ public class FlipperBot extends OdometryBot {
         }
     }
 
+    public void toggleGrabber(boolean button) {
+        if (button && grabberTimer.milliseconds() > 300) {
+            if (isGrabberOpen) {
+                grabber.setPosition(grabberOpened);
+                isGrabberOpen = false;
+                grabberTimer.reset();
+            } else {
+                grabber.setPosition(grabberClosed);
+                isGrabberOpen = true;
+                grabberTimer.reset();
+            }
+        }
+    }
+
     protected void onTick() {
         super.onTick();
-        opMode.telemetry.addData("flip:", flipper.getPosition());
-        opMode.telemetry.addData("angle:", flipAngle.getPosition());
-        opMode.telemetry.update();
+//        opMode.telemetry.addData("flip:", flipper.getPosition());
+//        opMode.telemetry.addData("angle:", flipAngle.getPosition());
+//        opMode.telemetry.update();
     }
 }

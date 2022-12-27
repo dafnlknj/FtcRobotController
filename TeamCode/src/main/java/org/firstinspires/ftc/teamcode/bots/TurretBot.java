@@ -6,23 +6,23 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 
-public class PinchBot extends OdometryBot {
+public class TurretBot extends FlipperBot {
     public Servo pinch = null;
     public Servo scorer = null;
+    public DcMotor extender = null;
+    public DcMotor turret = null;
 
     //two positions of the wobble servo
     final double pinchClosed = 0.05;
     final double pinchOpened = 0.25;
 
-    boolean isOpen = true;
+    boolean isPinchOpen = true;
     boolean isScoring = true;
 
-    long lastToggleDone = 0;
-    long timeSinceToggle = 0;
-    long lastToggleDone2 = 0;
-    long timeSinceToggle2 = 0;
+    private long lastToggleDone = 0;
+    private long lastToggleDone2 = 0;
 
-    public PinchBot(LinearOpMode opMode) {
+    public TurretBot(LinearOpMode opMode) {
         super(opMode);
     }
 
@@ -33,33 +33,48 @@ public class PinchBot extends OdometryBot {
         pinch.setPosition(pinchOpened);
         scorer = hwMap.get(Servo.class, "scorer");
         scorer.setPosition(0.5);
+        extender = hwMap.get(DcMotor.class, "extender");
+        extender.setPower(0);
+        extender.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        extender.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        extender.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        turret = hwMap.get(DcMotor.class, "turret");
+        turret.setPower(0);
+        turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        turret.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        turret.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
-    //call openPinch() to open the arm
-    public void openPinch() {
-        pinch.setPosition(pinchOpened);
+    protected void onTick() {
+        super.onTick();
+        opMode.telemetry.addData("extender:", extender.getCurrentPosition());
+        //opMode.telemetry.addData("angle:", flipAngle.getPosition());
+        opMode.telemetry.update();
     }
 
-    //call closeArm() to close the arm
-    public void closePinch() {
-        pinch.setPosition(pinchClosed);
+    public void controlExtender(float up, float down) {
+        if (up > 0) {
+            extender.setPower(0.1 * up);
+        } else if (down > 0) {
+            extender.setPower(-0.1 * down);
+        } else {
+            extender.setPower(0);
+        }
     }
 
     public void togglePinch(boolean button) {
-        timeSinceToggle = System.currentTimeMillis() - lastToggleDone;
+        long timeSinceToggle = System.currentTimeMillis() - lastToggleDone;
         if (button && timeSinceToggle > 300) {
-            if (isOpen) {
+            if (isPinchOpen) {
                 pinch.setPosition(pinchClosed);
-                isOpen = false;
+                isPinchOpen = false;
                 lastToggleDone = System.currentTimeMillis();
-            } else if (!isOpen) {
+            } else if (!isPinchOpen) {
                 pinch.setPosition(pinchOpened);
-                isOpen = true;
+                isPinchOpen = true;
                 lastToggleDone = System.currentTimeMillis();
             }
         }
-//        opMode.telemetry.addData("lastToggle", timeSinceToggle);
-//        opMode.telemetry.update();
     }
 
     public void controlScorer(boolean up, boolean down) {
@@ -71,7 +86,7 @@ public class PinchBot extends OdometryBot {
     }
 
     public void toggleScorer(boolean button) {
-        timeSinceToggle2 = System.currentTimeMillis() - lastToggleDone2;
+        long timeSinceToggle2 = System.currentTimeMillis() - lastToggleDone2;
         if (button && timeSinceToggle2 > 300) {
             if (isScoring) {
                 scorer.setPosition(0.75);
@@ -83,6 +98,5 @@ public class PinchBot extends OdometryBot {
                 lastToggleDone2 = System.currentTimeMillis();
             }
         }
-//        opMode.telemetry.addData
     }
 }

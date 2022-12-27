@@ -41,7 +41,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 
-public class DistanceSensorBot extends PinchBot {
+public class DistanceSensorBot extends OdometryBot {
 
     protected DistanceSensor distSensor = null;
 
