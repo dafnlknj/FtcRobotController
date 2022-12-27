@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 public class FlipperBot extends OdometryBot {
     public Servo flipper = null; //
-    public Servo flipAngle = null; // 0.38-0.85
+    public Servo flipAngle = null; // range: 0.38-0.85
 
     public FlipperBot(LinearOpMode opMode) {
         super(opMode);
