@@ -30,9 +30,13 @@ public class ManualDriveDemo extends LinearOpMode {
             //robot.driveByHandFieldCentric(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x, gamepad1.left_stick_button, gamepad2.left_stick_x, gamepad2.left_stick_y, gamepad2.right_stick_x, gamepad2.left_stick_button);
             robot.togglePinch(gamepad1.x);
             robot.controlScorer(gamepad1.y, gamepad1.a);
+            robot.toggleScorer(gamepad1.right_bumper);
             robot.controlFlipper(gamepad1.dpad_up, gamepad1.dpad_down);
+            robot.flipperToLoading(gamepad1.left_bumper);
             robot.toggleGrabber(gamepad1.b);
+            robot.grabberConeCheck();
             robot.controlExtender(gamepad1.left_trigger, gamepad1.right_trigger);
+            robot.controlTurret(gamepad1.left_stick_x);
             robot.onLoop(15, "manual drive");
         }
         robot.close();

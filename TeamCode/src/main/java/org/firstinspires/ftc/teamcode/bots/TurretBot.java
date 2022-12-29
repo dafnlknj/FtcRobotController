@@ -13,7 +13,7 @@ public class TurretBot extends FlipperBot {
     public DcMotor turret = null;
 
     //two positions of the wobble servo
-    final double pinchClosed = 0.05;
+    final double pinchClosed = 0;
     final double pinchOpened = 0.25;
 
     boolean isPinchOpen = true;
@@ -62,6 +62,16 @@ public class TurretBot extends FlipperBot {
         }
     }
 
+    public void controlTurret(float input) {
+        if (input > 0) {
+            turret.setPower(0.1*input);
+        } else if (input < 0) {
+            turret.setPower(0.1*input);
+        } else {
+            turret.setPower(0);
+        }
+    }
+
     public void togglePinch(boolean button) {
         long timeSinceToggle = System.currentTimeMillis() - lastToggleDone;
         if (button && timeSinceToggle > 300) {
@@ -93,7 +103,7 @@ public class TurretBot extends FlipperBot {
                 isScoring = false;
                 lastToggleDone2 = System.currentTimeMillis();
             } else if (!isScoring) {
-                scorer.setPosition(0.3);
+                scorer.setPosition(0.4);
                 isScoring = true;
                 lastToggleDone2 = System.currentTimeMillis();
             }

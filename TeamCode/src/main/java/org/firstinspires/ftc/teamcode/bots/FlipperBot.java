@@ -1,15 +1,19 @@
 package org.firstinspires.ftc.teamcode.bots;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 
 public class FlipperBot extends OdometryBot {
     public Servo flipper = null; //
     public Servo flipAngle = null; // range: 0.38-0.85
     public Servo grabber = null;
+    protected DistanceSensor grabberSensor = null;
 
     final double grabberClosed = 0.6;
     final double grabberOpened = 0.3;
@@ -31,6 +35,11 @@ public class FlipperBot extends OdometryBot {
         flipAngle.setPosition(0.6);
         grabber = hwMap.get(Servo.class, "grabber");
         grabber.setPosition(0.3);
+        grabberSensor = hwMap.get(DistanceSensor.class, "grabberSensor");
+    }
+
+    public double getGrabberDistance() {
+        return grabberSensor.getDistance(DistanceUnit.CM);
     }
 
     public void controlFlipper(boolean up, boolean down) {
@@ -46,6 +55,12 @@ public class FlipperBot extends OdometryBot {
         }
     }
 
+    public void flipperToLoading(boolean button) {
+        if (button) {
+            flipper.setPosition(0.65);
+        }
+    }
+
     public void controlAngle(boolean up, boolean down) {
         if (up) {
             flipAngle.setPosition(flipAngle.getPosition()+0.01);
@@ -54,17 +69,23 @@ public class FlipperBot extends OdometryBot {
         }
     }
 
+    public void grabberConeCheck() {
+        if (getGrabberDistance() < 2 && !isGrabberOpen) {
+            grabber.setPosition(grabberClosed);
+            isGrabberOpen = true;
+        }
+    }
+
     public void toggleGrabber(boolean button) {
         if (button && grabberTimer.milliseconds() > 300) {
             if (isGrabberOpen) {
                 grabber.setPosition(grabberOpened);
                 isGrabberOpen = false;
-                grabberTimer.reset();
             } else {
                 grabber.setPosition(grabberClosed);
                 isGrabberOpen = true;
-                grabberTimer.reset();
             }
+            grabberTimer.reset();
         }
     }
 
