@@ -16,7 +16,7 @@ public class FlipperBot extends OdometryBot {
     protected DistanceSensor grabberSensor = null;
 
     final double grabberClosed = 0.6;
-    final double grabberOpened = 0.3;
+    final double grabberOpened = 0.45; //0.3
 
     boolean isGrabberOpen = true;
 
@@ -34,7 +34,7 @@ public class FlipperBot extends OdometryBot {
         flipAngle = hwMap.get(Servo.class, "flipAngle");
         flipAngle.setPosition(0.6);
         grabber = hwMap.get(Servo.class, "grabber");
-        grabber.setPosition(0.3);
+        grabber.setPosition(grabberOpened);
         grabberSensor = hwMap.get(DistanceSensor.class, "grabberSensor");
     }
 
@@ -57,7 +57,7 @@ public class FlipperBot extends OdometryBot {
 
     public void flipperToLoading(boolean button) {
         if (button) {
-            flipper.setPosition(0.65);
+            flipper.setPosition(0.63);
         }
     }
 
@@ -70,7 +70,7 @@ public class FlipperBot extends OdometryBot {
     }
 
     public void grabberConeCheck() {
-        if (getGrabberDistance() < 2 && !isGrabberOpen) {
+        if (getGrabberDistance() < 2 && !isGrabberOpen && flipper.getPosition() < 0.5) {
             grabber.setPosition(grabberClosed);
             isGrabberOpen = true;
         }
