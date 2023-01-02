@@ -51,13 +51,13 @@ public class FlipperBot extends OdometryBot {
         if (flipper.getPosition() < 0.5) {
             flipAngle.setPosition(Math.min(flipper.getPosition() * 1.96 + 0.161, 0.85));
         } else {
-            flipAngle.setPosition(0.55);
+            flipAngle.setPosition(0.6);
         }
     }
 
     public void flipperToLoading(boolean button) {
         if (button) {
-            flipper.setPosition(0.63);
+            flipper.setPosition(0.55);
         }
     }
 
@@ -91,8 +91,8 @@ public class FlipperBot extends OdometryBot {
 
     protected void onTick() {
         super.onTick();
-//        opMode.telemetry.addData("flip:", flipper.getPosition());
-//        opMode.telemetry.addData("angle:", flipAngle.getPosition());
+        opMode.telemetry.addData("flip:", flipper.getPosition());
+        opMode.telemetry.addData("angle:", flipAngle.getPosition());
 //        opMode.telemetry.update();
     }
 }
