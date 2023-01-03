@@ -37,39 +37,44 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
-public class FSMBot extends NewDistanceSensorBot {
+public class FSMBot extends TurretBot {
 
-    ElapsedTime snarmTimer = new ElapsedTime();
-    ElapsedTime timeSince1 = new ElapsedTime(500);
-    ElapsedTime timeSince2 = new ElapsedTime(500);
-    ElapsedTime timeSince3 = new ElapsedTime(500);
-    ElapsedTime timeSince4 = new ElapsedTime(500);
-    ElapsedTime timeSince5 = new ElapsedTime(500);
-    ElapsedTime timeSince6 = new ElapsedTime(500);
+    private ElapsedTime timeSince = new ElapsedTime();
+    private ElapsedTime timeSince2 = new ElapsedTime(100);
 
-    public boolean isAutoStart = false;
-    public boolean shouldAutoExtend = true;
-    public boolean drivingDone = false;
-    public boolean shouldIdle = false;
-    public boolean breakOutOfIdle = false;
-    public boolean isAllianceHub = true;
-    public boolean manualIntakeSensor = false;
-    public boolean bypassAfterReadyAgain = true;
+    final protected double flipperGround = 0.16;
+    final protected double flipperLoadReady = 0.55;
+    final protected double flipperLoading = 0.7;
+    final protected double flipperClearTurret = 0.4;
 
-    public int snarmSnarmState = 0;
+    final protected double scorerLoading = 0;
+    protected double scorerScoreReady = 0.72;
+    protected double scorerScoring = 0.8;
 
-    protected double dropHeight = 0;
-    protected double snarmRotation = rotationCenter;
-    protected double retractionStep = 2600;
-    protected double extensionStep1 = 200;
-    protected double extensionStep2 = 1000;
-    final public double snarmIntakingHeight = 0.04;
-    final protected double snarmTravelHeight = 0.3;
+    private boolean shouldGrabCone = false;
+    private boolean shouldScoreCone = false;
+    private boolean readyToGrab = false;
 
-    final public double blueAllianceRotation = 0.66; //0.6
-    final public double redAllianceRotation = 0.34; //0.25
-    final public double blueSharedRotation = 0.7; //0.63
-    final public double redSharedRotation = 0.29; //0.22
+    private int heightIndex = 2;
+
+    public int coneConeState = 0;
+
+    public enum ConeState {
+        READY,
+        GRAB_CONE,
+        LOADING_READY,
+        LOADING,
+        LOADING_DONE,
+        EXTENDING_STAGE_1,
+        EXTENDING_STAGE_2,
+        SCORING,
+        DROPPING,
+        DRIVING,
+        IDLE,
+        IDLE_WAIT
+    }
+
+    public ConeState coneState = ConeState.READY;
 
     public FSMBot(LinearOpMode opMode) {
         super(opMode);
@@ -78,1182 +83,226 @@ public class FSMBot extends NewDistanceSensorBot {
     @Override
     public void init(HardwareMap ahwMap) {
         super.init(ahwMap);
-        snarmTimer.reset();
-        drivingDone = false;
-        if (!isAutonomous) {
-            snarmState = SnarmState.AFTER_READY_AGAIN;
-        }
+        timeSince.reset();
     }
 
-    public void setDropHeight(int pos) {
-        switch (pos) {
-            case 0:
-                dropHeight = 0.25;
-                maxExtension = 3100;
-                extensionStep1 = 200;
-                extensionStep2 = 1000;
-                retractionStep = 2600;
-                break;
-            case 1:
-                dropHeight = 0.46;
-                maxExtension = 3100;
-                extensionStep1 = 200;
-                extensionStep2 = 1000;
-                retractionStep = 2600;
-                break;
-            case 2:
-                dropHeight = 0.68;
-                maxExtension = 2900;
-                extensionStep1 = 200;
-                extensionStep2 = 1000;
-                retractionStep = 2600;
-                break;
-            case 3:
-                dropHeight = 0.9;
-                maxExtension = 1000;
-                extensionStep1 = 200;
-                extensionStep2 = 500;
-                retractionStep = 300;
-                break;
-            case 4:
-                dropHeight = 0.22;
-                maxExtension = 1500;
-                extensionStep1 = 200;
-                extensionStep2 = 600;
-                retractionStep = 1000;
-                break;
-        }
-    }
-
-    public void setSnarmRotation(int side) {
-        switch (side) {
-            case 0:
-                snarmRotation = blueAllianceRotation; //0.6
-                break;
-            case 1:
-                snarmRotation = redAllianceRotation; // 0.25
-                break;
-            case 2:
-                snarmRotation = blueSharedRotation; // 0.63
-                break;
-            case 3:
-                snarmRotation = redSharedRotation; // 0.22
-                break;
-            case 4:
-                snarmRotation = blueAllianceRotation;
-        }
-    }
-
-    public void toggleHub(boolean blue, boolean button) {
-        if (button && blue && timeSince5.milliseconds() > 500) {
-            if (isAllianceHub) {
-                setSnarmRotation(3);
-                setDropHeight(3);
-                isAllianceHub = false;
-                snarmSnarmState = 2;
-                opMode.telemetry.addData("switched to shared", true);
-            } else {
-                setSnarmRotation(0);
-                setDropHeight(0);
-                isAllianceHub = true;
-                snarmSnarmState = 1;
-                opMode.telemetry.addData("switched to alliance", true);
-            }
-            opMode.telemetry.update();
-            timeSince5.reset();
-        } else if (button && timeSince5.milliseconds() > 500) {
-            if (isAllianceHub) {
-                setSnarmRotation(2);
-                setDropHeight(3);
-                isAllianceHub = false;
-                snarmSnarmState = 2;
-                opMode.telemetry.addData("switched to shared", true);
-            } else {
-                setSnarmRotation(1);
-                setDropHeight(0);
-                isAllianceHub = true;
-                snarmSnarmState = 1;
-                opMode.telemetry.addData("switched to alliance", true);
-            }
-            opMode.telemetry.update();
-            timeSince5.reset();
-        }
-    }
-
-    public void autoExtend(boolean button) {
-        if (button && timeSince1.milliseconds() > 500) {
-            snarmState = SnarmState.READY;
-            isAutoStart = true;
-            shouldAutoExtend = true;
-            timeSince1.reset();
-        } else {
-            shouldAutoExtend = false;
-        }
-    }
-
-    public void autoRetract(boolean button) {
-        if (button && timeSince2.milliseconds() > 500) {
-            setExtension(minExtension);
-            snarmState = SnarmState.RETRACTING_STAGE_1;
+    public void selectDropHeight(boolean up, boolean down) {
+        if (up && timeSince2.milliseconds() > 100 && heightIndex < 2) {
+            heightIndex++;
             timeSince2.reset();
+            setDropHeight();
+        } else if (down && timeSince2.milliseconds() > 100 && heightIndex > 0) {
+            heightIndex--;
+            timeSince2.reset();
+            setDropHeight();
         }
     }
 
-    public void dropFreight(boolean button) {
-        if (button && timeSince3.milliseconds() > 500) {
-            snarmState = SnarmState.EXTENDING_STAGE_3;
-            //extender.setTargetPosition(extender.getCurrentPosition());
-            isAutonomous = true;
-            timeSince3.reset();
-        } else {
-            isAutonomous = false;
+    private void setDropHeight() {
+        switch (heightIndex) {
+            case 0:
+                maxExtension = 1000;
+                scorerScoreReady = 0.7;
+                scorerScoring = 0.72;
+                break;
+            case 1:
+                maxExtension = 1500;
+                scorerScoreReady = 0.7;
+                scorerScoring = 0.72;
+                break;
+            case 2:
+                maxExtension = 2000;
+                scorerScoreReady = 0.75;
+                scorerScoring = 0.8;
+                break;
         }
     }
 
-    public void prepareTape(boolean button) {
-        if (button && timeSince5.milliseconds() > 500) {
-            snarmState = SnarmState.IDLE;
-
-            timeSince5.reset();
+    public void clearTurretRotation(boolean button) {
+        if (button) {
+            turretSet = 0;
         }
     }
 
-    public void toggleBox(boolean button) {
-        if (button && timeSince4.milliseconds() > 500) {
-            if (box.getPosition() == boxOpened) {
-                box.setPosition(boxLocked);
-                timeSince4.reset();
-            } else if (box.getPosition() == boxLocked || box.getPosition() == boxInit){
-                box.setPosition(boxOpened);
-                timeSince4.reset();
-            }
+    public void readyToGrab(boolean button) {
+        if (button) {
+            coneState = ConeState.READY;
         }
+        readyToGrab = button;
     }
 
-    public void manualRaiseIntake(boolean button) {
-        manualIntakeSensor = button;
+    public void grabCone(boolean button) {
+        shouldGrabCone = button;
+    }
+
+    public void scoreCone(boolean button) {
+        shouldScoreCone = button;
     }
 
     protected void onTick() {
-        switch (snarmSnarmState) {
+        switch (coneConeState) {
             case 0:
-                switch (snarmState) {
+                switch (coneState) {
                     case READY:
-                        if (isAutoStart) {
-                            RobotLog.d("AUTO: ready");
+                        if (readyToGrab) {
+                            RobotLog.d("MAN: ready");
 
-                            setElevationPosition(elevationInit);
-                            setRotationPosition(rotationInit);
-                            setExtension(maxExtension);
+                            flipper.setPosition(flipperGround);
+                            openGrabber();
 
-                            box.setPosition(boxLocked);
-                            goToFlipperPosition(0);
+                            scorer.setPosition(scorerLoading);
+                            extenderTargetPosition = loadingExtension;
+                            openPinch();
+                            turretTargetPosition = turretZero;
 
-                            stopRotation();
-                            goToIntakePosition(3);
+                            coneState = ConeState.GRAB_CONE;
+                        }
+                        break;
+                    case GRAB_CONE:
+                        if (shouldGrabCone || getGrabberDistance() < 2.5) {
+                            RobotLog.d("MAN: grab cone");
 
-                            isAutoStart = false;
+                            flipper.setPosition(flipperGround);
+                            closeGrabber();
 
-                            snarmState = SnarmState.EXTENDING_STAGE_1;
+                            scorer.setPosition(scorerLoading);
+                            extenderTargetPosition = loadingExtension;
+                            openPinch();
+                            turretTargetPosition = turretZero;
+
+                            coneState = ConeState.LOADING_READY;
+                            timeSince.reset();
+                        }
+                        break;
+                    case LOADING_READY:
+                        if (timeSince.milliseconds() > 100) {
+                            RobotLog.d("MAN: loading ready");
+
+                            flipper.setPosition(flipperLoadReady);
+                            closeGrabber();
+
+                            scorer.setPosition(scorerLoading);
+                            extenderTargetPosition = loadingExtension;
+                            openPinch();
+                            turretTargetPosition = turretZero;
+
+                            coneState = ConeState.LOADING;
+                            timeSince.reset();
+                        }
+                        break;
+                    case LOADING:
+                        if (timeSince.milliseconds() > 750) {
+                            RobotLog.d("MAN: loading");
+
+                            flipper.setPosition(flipperLoading);
+                            closeGrabber();
+
+                            scorer.setPosition(scorerLoading);
+                            extenderTargetPosition = loadingExtension;
+                            openPinch();
+                            turretTargetPosition = turretZero;
+
+                            coneState = ConeState.LOADING_DONE;
+                        }
+                        break;
+                    case LOADING_DONE:
+                        if (!touchSensor.getState()) {
+                            RobotLog.d("MAN: loading done");
+
+                            flipper.setPosition(flipperLoading);
+                            openGrabber();
+
+                            scorer.setPosition(scorerLoading);
+                            extenderTargetPosition = loadingExtension;
+                            closePinch();
+                            turretTargetPosition = turretZero;
+
+                            coneState = ConeState.EXTENDING_STAGE_1;
+                            timeSince.reset();
                         }
                         break;
                     case EXTENDING_STAGE_1:
-                        if (extender.getCurrentPosition() > extensionStep1) {
-                            RobotLog.d("AUTO: 200 passed");
+                        if (timeSince.milliseconds() > 100) {
+                            RobotLog.d("MAN: extending stage 1");
 
-                            setElevationPosition(dropHeight);
-                            setRotationPosition(snarmRotation);
-                            setExtension(maxExtension);
+                            flipper.setPosition(flipperClearTurret);
+                            openGrabber();
 
-                            box.setPosition(boxLocked);
-                            goToFlipperPosition(0);
+                            scorer.setPosition(scorerScoreReady);
+                            extenderTargetPosition = maxExtension;
+                            closePinch();
+                            turretTargetPosition = turretZero;
 
-                            stopRotation();
-                            //goToIntakePosition(3);
-
-                            snarmState = SnarmState.EXTENDING_STAGE_2;
+                            coneState = ConeState.EXTENDING_STAGE_2;
+                            timeSince.reset();
                         }
                         break;
                     case EXTENDING_STAGE_2:
-                        if (extender.getCurrentPosition() > extensionStep2) {
-                            RobotLog.d("AUTO: 1000 passed");
+                        if (timeSince.milliseconds() > 500) {
+                            RobotLog.d("MAN: extending stage 2");
 
-                            setElevationPosition(dropHeight);
-                            setRotationPosition(snarmRotation);
-                            setExtension(maxExtension);
+                            flipper.setPosition(flipperClearTurret);
+                            openGrabber();
 
-                            box.setPosition(boxLocked);
-                            goToFlipperPosition(3);
+                            scorer.setPosition(scorerScoreReady);
+                            extenderTargetPosition = maxExtension;
+                            closePinch();
+                            turretTargetPosition = turretSet;
 
-                            stopRotation();
-                            goToIntakePosition(5);
-
-                            snarmState = SnarmState.EXTENDING_STAGE_3;
+                            coneState = ConeState.SCORING;
                         }
                         break;
-                    case EXTENDING_STAGE_3:
-                        if (extender.getCurrentPosition() > maxExtension - 100) {
-                            RobotLog.d("AUTO: max passed");
+                    case SCORING:
+                        if (shouldScoreCone) {
+                            RobotLog.d("MAN: scoring");
 
-                            setElevationPosition(dropHeight);
-                            setRotationPosition(snarmRotation);
-                            setExtension(maxExtension);
+                            flipper.setPosition(flipperClearTurret);
+                            openGrabber();
 
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(3);
+                            scorer.setPosition(scorerScoring);
+                            extenderTargetPosition = maxExtension;
+                            closePinch();
+                            turretTargetPosition = turretSet;
 
-                            stopRotation();
-                            //goToIntakePosition(3);
-
-                            snarmTimer.reset();
-
-                            snarmState = SnarmState.RELEASING;
+                            coneState = ConeState.DROPPING;
+                            timeSince.reset();
                         }
                         break;
-                    case RELEASING:
-                        if (snarmTimer.milliseconds() >= 100) {
-                            RobotLog.d("AUTO: retraction started");
+                    case DROPPING:
+                        if (timeSince.milliseconds() > 200) {
+                            RobotLog.d("MAN: dropping");
 
-                            setElevationPosition(dropHeight);
-                            setRotationPosition(rotationAvoid);
-                            setExtension(minExtension);
+                            flipper.setPosition(flipperClearTurret);
+                            openGrabber();
 
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(0);
+                            scorer.setPosition(scorerScoreReady);
+                            extenderTargetPosition = maxExtension;
+                            openPinch();
+                            turretTargetPosition = turretSet;
 
-                            stopRotation();
-                            goToIntakePosition(3);
-
-                            snarmState = SnarmState.RETRACTING_STAGE_1;
+                            coneState = ConeState.DRIVING;
+                            timeSince.reset();
                         }
                         break;
-                    case RETRACTING_STAGE_1:
-                        if (extender.getCurrentPosition() < 2600) {
-                            RobotLog.d("AUTO: 2600 passed");
+                    case DRIVING:
+                        if (timeSince.milliseconds() > 100) {
+                            RobotLog.d("MAN: driving");
 
-                            setElevationPosition(snarmIntakingHeight);
-                            setRotationPosition(rotationAvoid);
-                            setExtension(minExtension);
+                            flipper.setPosition(flipperClearTurret);
+                            openGrabber();
 
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(0);
+                            scorer.setPosition(scorerLoading);
+                            extenderTargetPosition = loadingExtension;
+                            openPinch();
+                            turretTargetPosition = turretZero;
 
-                            startRotation();
-                            goToIntakePosition(3);
-
-                            snarmState = SnarmState.INTAKING;
-                        }
-                        break;
-                    case INTAKING:
-                        if (drivingDone && (extender.getCurrentPosition() < minExtension + 100)) {
-                            RobotLog.d("AUTO: intaking started");
-
-                            setElevationPosition(snarmIntakingHeight);
-                            setRotationPosition(rotationCenter);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(0);
-
-                            startRotation();
-                            goToIntakePosition(4);
-
-                            drivingDone = false;
-                            intakeFast = false;
-
-                            snarmTimer.reset();
-
-                            snarmState = SnarmState.RAISING_INTAKE;
-                        }
-                        break;
-                    case RAISING_INTAKE:
-                        if ((distanceIntake < 7 || distanceIntake > 100 || snarmTimer.milliseconds() > 5000) && (intakePosIndex == 3 || intakePosIndex == 4) && extender.getCurrentPosition() < minExtension + 100) {
-                            RobotLog.d("AUTO: intake raised");
-
-                            setElevationPosition(snarmIntakingHeight);
-                            setRotationPosition(rotationCenter);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(0);
-
-                            stopRotation();
-                            goToIntakePosition(2);
-
-                            drivingDone = false;
-                            intakeFast = false;
-
-                            leftFront.setPower(0);
-                            rightFront.setPower(0);
-                            leftRear.setPower(0);
-                            rightRear.setPower(0);
-
-                            snarmTimer.reset();
-
-                            snarmState = SnarmState.FEEDING;
-                        }
-                        break;
-                    case FEEDING:
-                        if (snarmTimer.milliseconds() >= 500) {
-                            RobotLog.d("AUTO: feeding started");
-
-                            setElevationPosition(snarmIntakingHeight);
-                            setRotationPosition(rotationCenter);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(0);
-
-                            intakeFast = true;
-                            startRotation();
-                            //goToIntakePosition(2);
-
-                            snarmTimer.reset();
-
-                            snarmState = SnarmState.READY_AGAIN;
-                        }
-                        break;
-                    case READY_AGAIN:
-                        if (distanceBox < 8 || snarmTimer.milliseconds() > 1300) {
-                            RobotLog.d("AUTO: ready again");
-
-                            setElevationPosition(snarmIntakingHeight);
-                            setRotationPosition(rotationCenter);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxLocked);
-                            goToFlipperPosition(0);
-
-                            intakeFast = true;
-                            stopRotation();
-                            goToIntakePosition(2);
-
-                            isAutoStart = false;
-
-                            snarmState = SnarmState.AFTER_READY_AGAIN;
-                        }
-                        break;
-                    case AFTER_READY_AGAIN:
-                        if (snarmTimer.milliseconds() > 150 && keepExtending) {
-                            RobotLog.d("AUTO: after ready again");
-
-                            setElevationPosition(snarmIntakingHeight);
-                            setRotationPosition(rotationCenter);
-                            setExtension(maxExtension);
-
-                            box.setPosition(boxLocked);
-                            goToFlipperPosition(0);
-
-                            intakeFast = false;
-                            stopRotation();
-                            goToIntakePosition(3);
-
-                            isAutoStart = false;
-
-                            snarmState = SnarmState.EXTENDING_STAGE_1;
-                        }
-                        break;
-                    case IDLE:
-                        if (!shouldIdle) {
-                            RobotLog.d("AUTO: idle");
-
-                            setElevationPosition(0.2);
-                            setRotationPosition(rotationCenter);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxLocked);
-                            goToFlipperPosition(4);
-
-                            intakeFast = false;
-                            stopRotation();
-                            goToIntakePosition(0);
-
-                            isAutoStart = false;
-
-                            snarmState = SnarmState.READY;
-                        }
-                        break;
-                    case IDLE_WAIT:
-                        if (breakOutOfIdle) {
-                            RobotLog.d("AUTO: idle_wait");
-
-                            setElevationPosition(0.1);
-                            setRotationPosition(rotationCenter);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxLocked);
-                            goToFlipperPosition(0);
-
-                            intakeFast = false;
-                            stopRotation();
-                            goToIntakePosition(3);
-
-                            isAutoStart = false;
-
-                            snarmState = SnarmState.EXTENDING_STAGE_1;
+                            coneState = ConeState.READY;
                         }
                         break;
                 }
                 break;
             case 1:
-                switch (snarmState) {
-                    case READY:
-                        if (isAutoStart) {
-                            RobotLog.d("ALLIANCE: ready");
 
-                            setElevationPosition(elevationInit);
-                            setRotationPosition(rotationInit);
-                            setExtension(maxExtension);
-
-                            box.setPosition(boxLocked);
-                            goToFlipperPosition(0);
-
-                            stopRotation();
-                            goToIntakePosition(3);
-
-                            isAutoStart = false;
-
-                            snarmState = SnarmState.EXTENDING_STAGE_1;
-                        }
-                        break;
-                    case EXTENDING_STAGE_1:
-                        if (extender.getCurrentPosition() > extensionStep1) {
-                            RobotLog.d("ALLIANCE: 200 passed");
-
-                            setElevationPosition(dropHeight);
-                            setRotationPosition(snarmRotation);
-                            setExtension(maxExtension);
-
-                            box.setPosition(boxLocked);
-                            goToFlipperPosition(0);
-
-                            stopRotation();
-                            //goToIntakePosition(3);
-
-                            snarmState = SnarmState.EXTENDING_STAGE_2;
-                        }
-                        break;
-                    case EXTENDING_STAGE_2:
-                        if (extender.getCurrentPosition() > extensionStep2) {
-                            RobotLog.d("ALLIANCE: 1000 passed");
-
-                            setElevationPosition(dropHeight);
-                            setRotationPosition(snarmRotation);
-                            setExtension(maxExtension);
-
-                            box.setPosition(boxLocked);
-                            goToFlipperPosition(3);
-
-                            stopRotation();
-                            goToIntakePosition(5);
-
-                            snarmState = SnarmState.EXTENDING_STAGE_3;
-                        }
-                        break;
-                    case EXTENDING_STAGE_3:
-                        if (isAutonomous) {
-                            RobotLog.d("ALLIANCE: max passed");
-
-                            //setElevationPosition(dropHeight);
-                            //setRotationPosition(snarmRotation);
-                            //setExtension(maxExtension);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(3);
-
-                            stopRotation();
-                            //goToIntakePosition(3);
-
-                            snarmTimer.reset();
-
-                            snarmState = SnarmState.RELEASING;
-                        }
-                        break;
-                    case RELEASING:
-                        if (snarmTimer.milliseconds() >= 150) {
-                            RobotLog.d("ALLIANCE: retraction started");
-
-                            setElevationPosition(snarmIntakingHeight);
-                            setRotationPosition(rotationAvoid);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(3);
-
-                            stopRotation();
-                            goToIntakePosition(3);
-
-                            snarmState = SnarmState.RETRACTING_STAGE_1;
-                        }
-                        break;
-                    case RETRACTING_STAGE_1:
-                        if (extender.getCurrentPosition() < retractionStep) {
-                            RobotLog.d("ALLIANCE: 2600 passed");
-
-                            setElevationPosition(snarmIntakingHeight);
-                            setRotationPosition(rotationAvoid);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(3);
-
-                            stopRotation();
-                            //goToIntakePosition(3);
-
-                            snarmState = SnarmState.INTAKING;
-                        }
-                        break;
-                    case INTAKING:
-                        if ((extender.getCurrentPosition() < minExtension + 100)) {
-                            RobotLog.d("ALLIANCE: intaking started");
-
-                            setElevationPosition(snarmIntakingHeight);
-                            setRotationPosition(rotationAvoid);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(0);
-
-                            startRotation();
-                            goToIntakePosition(4);
-
-                            drivingDone = false;
-                            intakeFast = false;
-
-                            snarmState = SnarmState.RAISING_INTAKE;
-                        }
-                        break;
-                    case RAISING_INTAKE:
-                        if ((distanceIntake < 5 || manualIntakeSensor) && (intakePosIndex == 3 || intakePosIndex == 4) && extender.getCurrentPosition() < minExtension + 100 && !shouldTimeSpin) {
-                            RobotLog.d("ALLIANCE: intake raised");
-
-                            setElevationPosition(snarmIntakingHeight);
-                            setRotationPosition(rotationCenter);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(0);
-
-                            stopRotation();
-                            goToIntakePosition(2);
-
-                            drivingDone = false;
-                            intakeFast = false;
-
-                            leftFront.setPower(0);
-                            rightFront.setPower(0);
-                            leftRear.setPower(0);
-                            rightRear.setPower(0);
-
-                            snarmTimer.reset();
-
-                            snarmState = SnarmState.FEEDING;
-                        }
-                        break;
-                    case FEEDING:
-                        if (snarmTimer.milliseconds() >= 500) {
-                            RobotLog.d("ALLIANCE: feeding started");
-
-                            setElevationPosition(snarmIntakingHeight);
-                            setRotationPosition(rotationCenter);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(0);
-
-                            intakeFast = true;
-                            startRotation();
-                            //goToIntakePosition(2);
-
-                            snarmTimer.reset();
-
-                            snarmState = SnarmState.READY_AGAIN;
-                        }
-                        break;
-                    case READY_AGAIN:
-                        if (distanceBox < 8 || snarmTimer.milliseconds() > 1000) {
-                            RobotLog.d("ALLIANCE: ready again");
-
-                            setElevationPosition(snarmIntakingHeight);
-                            setRotationPosition(rotationCenter);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(0);
-
-                            intakeFast = true;
-                            startRotation();
-                            goToIntakePosition(2);
-
-                            isAutoStart = false;
-
-                            snarmTimer.reset();
-
-                            snarmState = SnarmState.AFTER_READY_AGAIN;
-                        }
-                        break;
-                    case AFTER_READY_AGAIN:
-                        if (snarmTimer.milliseconds() > 150 && bypassAfterReadyAgain) {
-                            RobotLog.d("ALLIANCE: after ready again");
-
-                            setElevationPosition(snarmIntakingHeight);
-                            setRotationPosition(rotationCenter);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxLocked);
-                            goToFlipperPosition(0);
-
-                            intakeFast = false;
-                            stopRotation();
-                            goToIntakePosition(2);
-
-                            isAutoStart = false;
-
-                            snarmTimer.reset();
-
-                            snarmState = SnarmState.READY;
-                        }
-                        break;
-                    case IDLE:
-                        if (!shouldIdle) {
-                            RobotLog.d("ALLIANCE: idle");
-
-                            setElevationPosition(0.2);
-                            //setRotationPosition(rotationCenter);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxLocked);
-                            goToFlipperPosition(5);
-
-                            intakeFast = false;
-                            stopRotation();
-                            goToIntakePosition(3);
-
-                            isAutoStart = false;
-
-                            snarmState = SnarmState.READY;
-                        }
-                        break;
-                }
-            case 2:
-                switch (snarmState) {
-                    case READY:
-                        if (isAutoStart) {
-                            RobotLog.d("SHARED: ready");
-
-                            setElevationPosition(elevationInit);
-                            setRotationPosition(rotationInit);
-                            setExtension(maxExtension - 200);
-
-                            box.setPosition(boxLocked);
-                            goToFlipperPosition(0);
-
-                            stopRotation();
-                            goToIntakePosition(3);
-
-                            isAutoStart = false;
-
-                            snarmState = SnarmState.EXTENDING_STAGE_1;
-                        }
-                        break;
-                    case EXTENDING_STAGE_1:
-                        if (extender.getCurrentPosition() > extensionStep1) {
-                            RobotLog.d("SHARED: 200 passed");
-
-                            setElevationPosition(dropHeight);
-                            setRotationPosition(snarmRotation);
-                            setExtension(maxExtension - 200);
-
-                            box.setPosition(boxLocked);
-                            goToFlipperPosition(0);
-
-                            stopRotation();
-                            //goToIntakePosition(3);
-
-                            snarmState = SnarmState.EXTENDING_STAGE_2;
-                        }
-                        break;
-                    case EXTENDING_STAGE_2:
-                        if (extender.getCurrentPosition() > extensionStep2) {
-                            RobotLog.d("SHARED: 1000 passed");
-
-                            setElevationPosition(dropHeight);
-                            setRotationPosition(snarmRotation);
-                            setExtension(maxExtension - 200);
-
-                            box.setPosition(boxLocked);
-                            goToFlipperPosition(3);
-
-                            stopRotation();
-                            goToIntakePosition(5);
-
-                            snarmState = SnarmState.EXTENDING_STAGE_3;
-                        }
-                        break;
-                    case EXTENDING_STAGE_3:
-                        if (isAutonomous) {
-                            RobotLog.d("SHARED: max passed");
-
-                            //setElevationPosition(dropHeight);
-                            //setRotationPosition(snarmRotation);
-                            //setExtension(maxExtension);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(3);
-
-                            stopRotation();
-                            //goToIntakePosition(3);
-
-                            snarmTimer.reset();
-
-                            snarmState = SnarmState.RELEASING;
-                        }
-                        break;
-                    case RELEASING:
-                        if (snarmTimer.milliseconds() >= 300) {
-                            RobotLog.d("SHARED: retraction started");
-
-                            setElevationPosition(snarmTravelHeight);
-                            //setRotationPosition(snarmRotation);
-                            //setExtension(minExtension);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(5);
-
-                            stopRotation();
-                            goToIntakePosition(3);
-
-                            snarmState = SnarmState.RETRACTING_STAGE_1;
-                        }
-                        break;
-                    case RETRACTING_STAGE_1:
-                        if (snarmTimer.milliseconds() >= 150) {
-                            RobotLog.d("SHARED: 2600 passed");
-
-                            setElevationPosition(snarmTravelHeight);
-                            //setRotationPosition(rotationCenter);
-                            setExtension(minExtension, 0.5);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(5);
-
-                            stopRotation();
-                            //goToIntakePosition(3);
-
-                            snarmState = SnarmState.RETRACTING_STAGE_2;
-                        }
-                        break;
-                    case RETRACTING_STAGE_2:
-                        if (extender.getCurrentPosition() < retractionStep) {
-                            RobotLog.d("SHARED: 2600 passed");
-
-                            setElevationPosition(snarmTravelHeight);
-                            setRotationPosition(rotationAvoid);
-                            setExtension(minExtension, 0.7);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(5);
-
-                            stopRotation();
-                            //goToIntakePosition(3);
-
-                            snarmState = SnarmState.INTAKING;
-                        }
-                        break;
-                    case INTAKING:
-                        if ((extender.getCurrentPosition() < minExtension + 100)) {
-                            RobotLog.d("SHARED: intaking started");
-
-                            setElevationPosition(snarmTravelHeight);
-                            setRotationPosition(rotationAvoid);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(5);
-
-                            startRotation();
-                            goToIntakePosition(4);
-
-                            snarmTimer.reset();
-
-                            drivingDone = false;
-                            intakeFast = false;
-
-                            snarmState = SnarmState.WAITING_FOR_ROTATION;
-                        }
-                        break;
-                    case WAITING_FOR_ROTATION:
-                        if (snarmTimer.milliseconds() >= 1000) {
-                            RobotLog.d("SHARED: rotation centered");
-
-                            setElevationPosition(snarmIntakingHeight);
-                            setRotationPosition(rotationAvoid);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(0);
-
-                            startRotation();
-                            goToIntakePosition(4);
-
-                            drivingDone = false;
-                            intakeFast = false;
-
-                            snarmState = SnarmState.RAISING_INTAKE;
-                        }
-                        break;
-                    case RAISING_INTAKE:
-                        if ((distanceIntake < 5 || manualIntakeSensor) && (intakePosIndex == 3 || intakePosIndex == 4) && extender.getCurrentPosition() < minExtension + 100 && !shouldTimeSpin) {
-                            RobotLog.d("SHARED: intake raised");
-
-                            setElevationPosition(snarmIntakingHeight);
-                            setRotationPosition(rotationCenter);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(0);
-
-                            stopRotation();
-                            goToIntakePosition(2);
-
-                            drivingDone = false;
-                            intakeFast = false;
-
-                            leftFront.setPower(0);
-                            rightFront.setPower(0);
-                            leftRear.setPower(0);
-                            rightRear.setPower(0);
-
-                            snarmTimer.reset();
-
-                            snarmState = SnarmState.FEEDING;
-                        }
-                        break;
-                    case FEEDING:
-                        if (snarmTimer.milliseconds() >= 500) {
-                            RobotLog.d("SHARED: feeding started");
-
-                            setElevationPosition(snarmIntakingHeight);
-                            setRotationPosition(rotationCenter);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(0);
-
-                            intakeFast = true;
-                            startRotation();
-                            //goToIntakePosition(2);
-
-                            snarmTimer.reset();
-
-                            snarmState = SnarmState.READY_AGAIN;
-                        }
-                        break;
-                    case READY_AGAIN:
-                        if (distanceBox < 8 || snarmTimer.milliseconds() > 1000) {
-                            RobotLog.d("SHARED: ready again");
-
-                            setElevationPosition(snarmIntakingHeight);
-                            setRotationPosition(rotationCenter);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(0);
-
-                            intakeFast = true;
-                            startRotation();
-                            goToIntakePosition(2);
-
-                            isAutoStart = false;
-
-                            snarmTimer.reset();
-
-                            snarmState = SnarmState.AFTER_READY_AGAIN;
-                        }
-                        break;
-                    case AFTER_READY_AGAIN:
-                        if (snarmTimer.milliseconds() > 150 && bypassAfterReadyAgain) {
-                            RobotLog.d("SHARED: after ready again");
-
-                            setElevationPosition(snarmIntakingHeight);
-                            setRotationPosition(rotationCenter);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxLocked);
-                            goToFlipperPosition(0);
-
-                            intakeFast = false;
-                            stopRotation();
-                            goToIntakePosition(2);
-
-                            isAutoStart = false;
-
-                            snarmTimer.reset();
-
-                            snarmState = SnarmState.READY;
-                        }
-                        break;
-                    case IDLE:
-                        if (!shouldIdle) {
-                            RobotLog.d("SHARED: idle");
-
-                            setElevationPosition(0.2);
-                            //setRotationPosition(rotationCenter);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxLocked);
-                            goToFlipperPosition(5);
-
-                            intakeFast = false;
-                            stopRotation();
-                            goToIntakePosition(3);
-
-                            isAutoStart = false;
-
-                            snarmState = SnarmState.READY;
-                        }
-                        break;
-                }
-            case 3:
-                switch (snarmState) {
-                    case READY:
-                        if (isAutoStart) {
-                            RobotLog.d("DEMO: ready");
-
-                            setElevationPosition(elevationInit);
-                            setRotationPosition(rotationInit);
-                            setExtension(maxExtension);
-
-                            box.setPosition(boxLocked);
-                            goToFlipperPosition(0);
-
-                            stopRotation();
-                            goToIntakePosition(3);
-
-                            isAutoStart = false;
-
-                            snarmState = SnarmState.EXTENDING_STAGE_1;
-                        }
-                        break;
-                    case EXTENDING_STAGE_1:
-                        if (extender.getCurrentPosition() > extensionStep1) {
-                            RobotLog.d("DEMO: 200 passed");
-
-                            setElevationPosition(dropHeight);
-                            setRotationPosition(snarmRotation);
-                            setExtension(maxExtension);
-
-                            box.setPosition(boxLocked);
-                            goToFlipperPosition(3);
-
-                            stopRotation();
-                            //goToIntakePosition(3);
-
-                            snarmState = SnarmState.EXTENDING_STAGE_2;
-                        }
-                        break;
-                    case EXTENDING_STAGE_2:
-                        if (extender.getCurrentPosition() > extensionStep2) {
-                            RobotLog.d("DEMO: 1000 passed");
-
-                            setElevationPosition(dropHeight);
-                            setRotationPosition(snarmRotation);
-                            setExtension(maxExtension);
-
-                            box.setPosition(boxLocked);
-                            goToFlipperPosition(3);
-
-                            stopRotation();
-                            goToIntakePosition(5);
-
-                            snarmState = SnarmState.EXTENDING_STAGE_3;
-                        }
-                        break;
-                    case EXTENDING_STAGE_3:
-                        if (isAutonomous) {
-                            RobotLog.d("DEMO: max passed");
-
-                            //setElevationPosition(dropHeight);
-                            //setRotationPosition(snarmRotation);
-                            //setExtension(maxExtension);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(3);
-
-                            stopRotation();
-                            //goToIntakePosition(3);
-
-                            snarmTimer.reset();
-
-                            snarmState = SnarmState.RELEASING;
-                        }
-                        break;
-                    case RELEASING:
-                        if (snarmTimer.milliseconds() >= 150) {
-                            RobotLog.d("DEMO: retraction started");
-
-                            setElevationPosition(snarmIntakingHeight);
-                            setRotationPosition(rotationAvoid);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(3);
-
-                            stopRotation();
-                            goToIntakePosition(3);
-
-                            snarmState = SnarmState.RETRACTING_STAGE_1;
-                        }
-                        break;
-                    case RETRACTING_STAGE_1:
-                        if (extender.getCurrentPosition() < retractionStep) {
-                            RobotLog.d("DEMO: 2600 passed");
-
-                            setElevationPosition(snarmIntakingHeight);
-                            setRotationPosition(rotationAvoid);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(3);
-
-                            stopRotation();
-                            //goToIntakePosition(3);
-
-                            snarmState = SnarmState.INTAKING;
-                        }
-                        break;
-                    case INTAKING:
-                        if ((extender.getCurrentPosition() < minExtension + 100)) {
-                            RobotLog.d("DEMO: intaking started");
-
-                            setElevationPosition(snarmIntakingHeight);
-                            setRotationPosition(rotationAvoid);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(0);
-
-                            startRotation();
-                            goToIntakePosition(4);
-
-                            drivingDone = false;
-                            intakeFast = false;
-
-                            snarmState = SnarmState.RAISING_INTAKE;
-                        }
-                        break;
-                    case RAISING_INTAKE:
-                        if ((distanceIntake < 5 || manualIntakeSensor) && (intakePosIndex == 3 || intakePosIndex == 4) && extender.getCurrentPosition() < minExtension + 100 && !shouldTimeSpin) {
-                            RobotLog.d("DEMO: intake raised");
-
-                            setElevationPosition(snarmIntakingHeight);
-                            setRotationPosition(rotationCenter);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(0);
-
-                            stopRotation();
-                            goToIntakePosition(2);
-
-                            drivingDone = false;
-                            intakeFast = false;
-
-                            leftFront.setPower(0);
-                            rightFront.setPower(0);
-                            leftRear.setPower(0);
-                            rightRear.setPower(0);
-
-                            snarmTimer.reset();
-
-                            snarmState = SnarmState.FEEDING;
-                        }
-                        break;
-                    case FEEDING:
-                        if (snarmTimer.milliseconds() >= 500) {
-                            RobotLog.d("DEMO: feeding started");
-
-                            setElevationPosition(snarmIntakingHeight);
-                            setRotationPosition(rotationCenter);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(0);
-
-                            intakeFast = true;
-                            startRotation();
-                            //goToIntakePosition(2);
-
-                            snarmTimer.reset();
-
-                            snarmState = SnarmState.READY_AGAIN;
-                        }
-                        break;
-                    case READY_AGAIN:
-                        if (distanceBox < 8 || snarmTimer.milliseconds() > 1000) {
-                            RobotLog.d("DEMO: ready again");
-
-                            setElevationPosition(snarmIntakingHeight);
-                            setRotationPosition(rotationCenter);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxOpened);
-                            goToFlipperPosition(0);
-
-                            intakeFast = true;
-                            startRotation();
-                            goToIntakePosition(2);
-
-                            isAutoStart = false;
-
-                            snarmTimer.reset();
-
-                            snarmState = SnarmState.AFTER_READY_AGAIN;
-                        }
-                        break;
-                    case AFTER_READY_AGAIN:
-                        if (snarmTimer.milliseconds() > 150 && bypassAfterReadyAgain) {
-                            RobotLog.d("DEMO: after ready again");
-
-                            setElevationPosition(snarmIntakingHeight);
-                            setRotationPosition(rotationCenter);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxLocked);
-                            goToFlipperPosition(0);
-
-                            intakeFast = false;
-                            stopRotation();
-                            goToIntakePosition(2);
-
-                            isAutoStart = false;
-
-                            snarmTimer.reset();
-
-                            snarmState = SnarmState.READY;
-                        }
-                        break;
-                    case IDLE:
-                        if (!shouldIdle) {
-                            RobotLog.d("DEMO: idle");
-
-                            setElevationPosition(0.2);
-                            //setRotationPosition(rotationCenter);
-                            setExtension(minExtension);
-
-                            box.setPosition(boxLocked);
-                            goToFlipperPosition(5);
-
-                            intakeFast = false;
-                            stopRotation();
-                            goToIntakePosition(3);
-
-                            isAutoStart = false;
-
-                            snarmState = SnarmState.READY;
-                        }
-                        break;
-                }
         }
         super.onTick();
     }

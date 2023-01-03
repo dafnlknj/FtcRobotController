@@ -33,20 +33,20 @@ public class LEDBot extends FSMBot{
 //        LEDControl.setPosition(input);
 //    }
 
-    public void updateLED() {
-        if (snarmState == SnarmState.FEEDING) {
-            //LEDControl.setPosition(0.7145);
-            LED.setPattern(YELLOW);
-        } else if (snarmState == SnarmState.READY) {
-            //LEDControl.setPosition(0.1);
-            LED.setPattern(GREEN);
-        } else {
-            LED.setPattern(RED);
-        }
-    }
+//    public void updateLED() {
+//        if (snarmState == ConeState.SCORING) {
+//            //LEDControl.setPosition(0.7145);
+//            LED.setPattern(YELLOW);
+//        } else if (snarmState == ConeState.READY) {
+//            //LEDControl.setPosition(0.1);
+//            LED.setPattern(GREEN);
+//        } else {
+//            LED.setPattern(RED);
+//        }
+//    }
 
     protected void onTick(){
-        updateLED();
+        //updateLED();
         //opMode.telemetry.addData("Shooting Distance", shootingDistance);
         //opMode.telemetry.update();
         super.onTick();

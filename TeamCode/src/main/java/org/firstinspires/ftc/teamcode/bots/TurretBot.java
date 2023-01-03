@@ -4,20 +4,26 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
-
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 public class TurretBot extends FlipperBot {
     public Servo pinch = null;
     public Servo scorer = null;
     public DcMotor extender = null; //0-975
     public DcMotor turret = null;
+    public DigitalChannel touchSensor = null;
 
     //two positions of the wobble servo
-    final double pinchClosed = 0.34;
-    final double pinchOpened = 0.56; //0.25
-    final int minExtension = 0;
-    final int maxExtension = 975;
-    final int loadingExtension = 370;
+    final double pinchClosed = 0.17;
+    final double pinchOpened = 0.38; //0.25
+    final protected int minExtension = 0;
+    protected int maxExtension = 2000;
+    final protected int loadingExtension = 255;
+    final protected int turretZero = 0;
+    protected int turretSet = 0;
+
+    protected int extenderTargetPosition = 0;
+    protected int turretTargetPosition = turretZero;
 
     boolean isPinchOpen = true;
     boolean isScoring = true;
@@ -46,12 +52,19 @@ public class TurretBot extends FlipperBot {
         turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turret.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         turret.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        touchSensor = hwMap.get(DigitalChannel.class, "touch");
+        touchSensor.setMode(DigitalChannel.Mode.INPUT);
     }
 
     protected void onTick() {
         super.onTick();
         opMode.telemetry.addData("extender:", extender.getCurrentPosition());
         opMode.telemetry.addData("scorer:", scorer.getPosition());
+        extenderRunToPosition(extenderTargetPosition, 0.5);
+        turretRunToPosition(turretTargetPosition, 0.3);
+        if (!touchSensor.getState()) {
+            opMode.telemetry.addData("touch", true);
+        }
         //opMode.telemetry.update();
     }
 
@@ -65,7 +78,7 @@ public class TurretBot extends FlipperBot {
     public void goToLoadingPosition(boolean button) {
         if (button) {
             scorer.setPosition(0);
-            extenderRunToPosition(loadingExtension, 0.5);
+            extenderTargetPosition = loadingExtension;
             turretRunToPosition(0, 0.3);
         }
     }
@@ -75,50 +88,47 @@ public class TurretBot extends FlipperBot {
             scorer.setPosition(0.57);
             flipper.setPosition(0.4);
             flipAngle.setPosition(Math.min(flipper.getPosition() * 1.96 + 0.161, 0.85));
-            extenderRunToPosition(maxExtension, 0.5);
+            extenderTargetPosition = maxExtension;
         }
     }
 
     public void controlExtender(float up, float down) {
         if (up > 0 && extender.getCurrentPosition() < maxExtension) {
-            extender.setTargetPosition((int) (extender.getCurrentPosition() + up * 50));
-            extender.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            extender.setPower(0.2);
+            extenderTargetPosition = (int)(extenderTargetPosition + up * 50);
         } else if (down > 0 && extender.getCurrentPosition() > minExtension) {
-            extender.setTargetPosition((int) (extender.getCurrentPosition() - down * 50));
-            extender.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            extender.setPower(0.2);
-        } else if (!extender.isBusy()) {
-            extender.setPower(0);
+            extenderTargetPosition = (int)(extenderTargetPosition - down * 50);
         }
     }
 
     public void controlTurret(boolean left, boolean right) {
         if (left) {
-            turret.setTargetPosition((int) (turret.getCurrentPosition() + 15));
-            turret.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            turret.setPower(0.2);
+            turretTargetPosition = turretSet - 30;
+            turretSet = turretTargetPosition;
         } else if (right) {
-            turret.setTargetPosition((int) (turret.getCurrentPosition() - 15));
-            turret.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            turret.setPower(0.2);
-        } else if (!turret.isBusy()) {
-            turret.setPower(0);
+            turretTargetPosition = turretSet + 30;
+            turretSet = turretTargetPosition;
         }
+    }
+
+    protected void openPinch() {
+        pinch.setPosition(pinchOpened);
+        isPinchOpen = false;
+    }
+
+    protected void closePinch() {
+        pinch.setPosition(pinchClosed);
+        isPinchOpen = true;
     }
 
     public void togglePinch(boolean button) {
         long timeSinceToggle = System.currentTimeMillis() - lastToggleDone;
         if (button && timeSinceToggle > 300) {
             if (isPinchOpen) {
-                pinch.setPosition(pinchClosed);
-                isPinchOpen = false;
-                lastToggleDone = System.currentTimeMillis();
-            } else if (!isPinchOpen) {
-                pinch.setPosition(pinchOpened);
-                isPinchOpen = true;
-                lastToggleDone = System.currentTimeMillis();
+                openPinch();
+            } else {
+                closePinch();
             }
+            lastToggleDone = System.currentTimeMillis();
         }
     }
 
@@ -136,22 +146,25 @@ public class TurretBot extends FlipperBot {
             if (isScoring) {
                 scorer.setPosition(0.75);
                 isScoring = false;
-                lastToggleDone2 = System.currentTimeMillis();
-            } else if (!isScoring) {
+            } else {
                 scorer.setPosition(0.4);
                 isScoring = true;
-                lastToggleDone2 = System.currentTimeMillis();
             }
+            lastToggleDone2 = System.currentTimeMillis();
         }
     }
 
-    public void extenderRunToPosition(int position, double power) {
+    protected void extenderRunToPosition(int position, double power) {
         extender.setTargetPosition(position);
         extender.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         extender.setPower(power);
     }
 
-    public void turretRunToPosition(int position, double power) {
+    protected void turretRunToPosition(int position) {
+        turretRunToPosition(position, 0.2);
+    }
+
+    protected void turretRunToPosition(int position, double power) {
         turret.setTargetPosition(position);
         turret.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         turret.setPower(power);

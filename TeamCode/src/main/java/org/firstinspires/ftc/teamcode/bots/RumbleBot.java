@@ -26,21 +26,21 @@ public class RumbleBot extends LEDBot{
                 .build();
     }
 
-    public void rumble() {
-        if (distanceBox < 8 && rumbleCheck) {
-            vibrate = true;
-            rumbleCheck = false;
-        } else if (distanceBox >= 8) {
-            vibrate = false;
-            rumbleCheck = true;
-        } else {
-            vibrate = false;
-            rumbleCheck = false;
-        }
-    }
+//    public void rumble() {
+//        if (distanceBox < 8 && rumbleCheck) {
+//            vibrate = true;
+//            rumbleCheck = false;
+//        } else if (distanceBox >= 8) {
+//            vibrate = false;
+//            rumbleCheck = true;
+//        } else {
+//            vibrate = false;
+//            rumbleCheck = false;
+//        }
+//    }
 
     protected void onTick(){
-        rumble();
+        //rumble();
         super.onTick();
     }
 }

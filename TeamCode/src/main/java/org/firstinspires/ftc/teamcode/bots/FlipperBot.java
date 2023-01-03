@@ -48,11 +48,6 @@ public class FlipperBot extends OdometryBot {
         } else if (down && flipper.getPosition() > 0.13) {
             flipper.setPosition(flipper.getPosition()-0.01);
         }
-        if (flipper.getPosition() < 0.5) {
-            flipAngle.setPosition(Math.min(flipper.getPosition() * 1.96 + 0.161, 0.85));
-        } else {
-            flipAngle.setPosition(0.6);
-        }
     }
 
     public void flipperToLoading(boolean button) {
@@ -76,14 +71,22 @@ public class FlipperBot extends OdometryBot {
         }
     }
 
+    public void openGrabber() {
+        grabber.setPosition(grabberOpened);
+        isGrabberOpen = false;
+    }
+
+    public void closeGrabber() {
+        grabber.setPosition(grabberClosed);
+        isGrabberOpen = true;
+    }
+
     public void toggleGrabber(boolean button) {
         if (button && grabberTimer.milliseconds() > 300) {
             if (isGrabberOpen) {
-                grabber.setPosition(grabberOpened);
-                isGrabberOpen = false;
+                openGrabber();
             } else {
-                grabber.setPosition(grabberClosed);
-                isGrabberOpen = true;
+                closeGrabber();
             }
             grabberTimer.reset();
         }
@@ -94,5 +97,10 @@ public class FlipperBot extends OdometryBot {
         opMode.telemetry.addData("flip:", flipper.getPosition());
         opMode.telemetry.addData("angle:", flipAngle.getPosition());
 //        opMode.telemetry.update();
+        if (flipper.getPosition() < 0.5) {
+            flipAngle.setPosition(Math.min(flipper.getPosition() * 1.96 + 0.161, 0.85));
+        } else {
+            flipAngle.setPosition(0.6);
+        }
     }
 }
