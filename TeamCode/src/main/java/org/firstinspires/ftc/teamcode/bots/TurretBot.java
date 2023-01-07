@@ -14,12 +14,12 @@ public class TurretBot extends FlipperBot {
     public DigitalChannel touchSensor = null;
 
     //two positions of the wobble servo
-    final double pinchClosed = 0.17;
-    final double pinchOpened = 0.38; //0.25
+    final double pinchClosed = 0.18;
+    final double pinchOpened = 0.4; //0.25
     final protected int minExtension = 0;
     protected int maxExtension = 2000;
     final protected int loadingExtension = 255;
-    final protected int turretZero = 0;
+    protected int turretZero = 0;
     protected int turretSet = 0;
 
     protected int extenderTargetPosition = 0;
@@ -39,9 +39,9 @@ public class TurretBot extends FlipperBot {
     public void init(HardwareMap ahwMap) {
         super.init(ahwMap);
         pinch = hwMap.get(Servo.class, "pinch");
-        pinch.setPosition(pinchOpened);
+        pinch.setPosition(pinchClosed);
         scorer = hwMap.get(Servo.class, "scorer");
-        scorer.setPosition(0.5);
+        scorer.setPosition(0.14);
         extender = hwMap.get(DcMotor.class, "extender");
         extender.setPower(0);
         extender.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -102,10 +102,10 @@ public class TurretBot extends FlipperBot {
 
     public void controlTurret(boolean left, boolean right) {
         if (left) {
-            turretTargetPosition = turretSet - 30;
+            turretTargetPosition = turretSet - 5;
             turretSet = turretTargetPosition;
         } else if (right) {
-            turretTargetPosition = turretSet + 30;
+            turretTargetPosition = turretSet + 5;
             turretSet = turretTargetPosition;
         }
     }
@@ -132,10 +132,10 @@ public class TurretBot extends FlipperBot {
         }
     }
 
-    public void controlScorer(boolean up, boolean down) {
-        if (up) {
+    public void controlScorer(float up, float down) {
+        if (up > 0) {
             scorer.setPosition(scorer.getPosition()+0.01);
-        } else if (down) {
+        } else if (down > 0) {
             scorer.setPosition(scorer.getPosition()-0.01);
         }
     }

@@ -30,7 +30,7 @@ public class FlipperBot extends OdometryBot {
     public void init(HardwareMap ahwMap) {
         super.init(ahwMap);
         flipper = hwMap.get(Servo.class, "flipper");
-        flipper.setPosition(0.3);
+        flipper.setPosition(0.64);
         flipAngle = hwMap.get(Servo.class, "flipAngle");
         flipAngle.setPosition(0.6);
         grabber = hwMap.get(Servo.class, "grabber");
