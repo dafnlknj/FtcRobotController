@@ -118,8 +118,8 @@ public class FSMBot extends TurretBot {
                 break;
             case 2:
                 maxExtension = 2000;
-                scorerScoreReady = 0.75;
-                scorerScoring = 0.75;
+                scorerScoreReady = 0.73;
+                scorerScoring = 0.73;
                 break;
         }
     }
@@ -156,6 +156,15 @@ public class FSMBot extends TurretBot {
         if (button || button2) {
             coneState = ConeState.DRIVING;
             isManual = true;
+        } else {
+            isManual = false;
+        }
+    }
+
+    public void stopExtender(boolean button) {
+        if (button) {
+            extenderSafe = false;
+            extender.setPower(0);
         }
     }
 
@@ -206,7 +215,7 @@ public class FSMBot extends TurretBot {
                         break;
                     case GRAB_CONE:
                         opMode.telemetry.addData("grab cone", readyToGrab);
-                        if (shouldGrabCone || getGrabberDistance() < 2.5) {
+                        if (shouldGrabCone) {
                             RobotLog.d("MAN: grab cone");
 
                             flipper.setPosition(flipperGround);
@@ -337,7 +346,7 @@ public class FSMBot extends TurretBot {
                             isManual = false;
                             RobotLog.d("MAN: driving");
 
-                            flipper.setPosition(flipperClearTurret);
+                            flipper.setPosition(0.5);
                             openGrabber();
 
                             scorer.setPosition(scorerLoading);

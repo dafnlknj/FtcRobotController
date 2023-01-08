@@ -47,6 +47,9 @@ public class ManualDriveDemo extends LinearOpMode {
             robot.grabberUp(gamepad1.x, gamepad2.x);
             robot.resetTurretZero(gamepad2.b);
             robot.clearTurretRotation(gamepad2.y);
+
+            robot.stopExtender(gamepad2.left_bumper);
+
             //robot.opMode.telemetry.addData("time:", runtime.milliseconds());
             robot.opMode.telemetry.update();
             //runtime.reset();

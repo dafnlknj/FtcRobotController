@@ -27,6 +27,7 @@ public class TurretBot extends FlipperBot {
 
     boolean isPinchOpen = true;
     boolean isScoring = true;
+    boolean extenderSafe = true;
 
     private long lastToggleDone = 0;
     private long lastToggleDone2 = 0;
@@ -60,7 +61,9 @@ public class TurretBot extends FlipperBot {
         super.onTick();
         opMode.telemetry.addData("extender:", extender.getCurrentPosition());
         opMode.telemetry.addData("scorer:", scorer.getPosition());
-        extenderRunToPosition(extenderTargetPosition, 0.5);
+        if (extenderSafe) {
+            extenderRunToPosition(extenderTargetPosition, 0.5);
+        }
         turretRunToPosition(turretTargetPosition, 0.3);
         if (!touchSensor.getState()) {
             opMode.telemetry.addData("touch", true);
@@ -102,10 +105,10 @@ public class TurretBot extends FlipperBot {
 
     public void controlTurret(boolean left, boolean right) {
         if (left) {
-            turretTargetPosition = turretSet - 5;
+            turretTargetPosition = turretSet - 3;
             turretSet = turretTargetPosition;
         } else if (right) {
-            turretTargetPosition = turretSet + 5;
+            turretTargetPosition = turretSet + 3;
             turretSet = turretTargetPosition;
         }
     }
