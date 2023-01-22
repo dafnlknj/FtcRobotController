@@ -105,10 +105,10 @@ public class TurretBot extends FlipperBot {
 
     public void controlTurret(boolean left, boolean right) {
         if (left) {
-            turretTargetPosition = turretSet - 3;
+            turretTargetPosition = turretSet - 11;
             turretSet = turretTargetPosition;
         } else if (right) {
-            turretTargetPosition = turretSet + 3;
+            turretTargetPosition = turretSet + 11;
             turretSet = turretTargetPosition;
         }
     }

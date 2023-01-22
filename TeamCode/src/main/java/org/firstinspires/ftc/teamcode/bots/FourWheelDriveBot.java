@@ -107,9 +107,9 @@ public class FourWheelDriveBot extends BotBot{
 
     public void driveByHandConeCentric(double right_stick_x) {
         if (right_stick_x > 0) {
-            driveByVector(0, 0.2, 0.2, 1);
+            driveByVector(0, 0.2, -0.2, 1);
         } else if (right_stick_x < 0) {
-            driveByVector(0, -0.2, -0.2, 1);
+            driveByVector(0, -0.2, 0.2, 1);
         }
     }
 

@@ -107,12 +107,12 @@ public class FSMBot extends TurretBot {
     private void setDropHeight() {
         switch (heightIndex) {
             case 0:
-                maxExtension = 1000;
-                scorerScoreReady = 0.75;
-                scorerScoring = 0.75;
+                maxExtension = 800;
+                scorerScoreReady = 0.77;
+                scorerScoring = 0.77;
                 break;
             case 1:
-                maxExtension = 1500;
+                maxExtension = 1000;
                 scorerScoreReady = 0.77;
                 scorerScoring = 0.77;
                 break;
