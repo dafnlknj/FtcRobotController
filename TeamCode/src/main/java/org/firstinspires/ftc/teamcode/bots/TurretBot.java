@@ -62,9 +62,9 @@ public class TurretBot extends FlipperBot {
         opMode.telemetry.addData("extender:", extender.getCurrentPosition());
         opMode.telemetry.addData("scorer:", scorer.getPosition());
         if (extenderSafe) {
-            extenderRunToPosition(extenderTargetPosition, 0.5);
+            extenderRunToPosition(extenderTargetPosition, 0.7);
         }
-        turretRunToPosition(turretTargetPosition, 0.3);
+        turretRunToPosition(turretTargetPosition, 0.5);
         if (!touchSensor.getState()) {
             opMode.telemetry.addData("touch", true);
         }

@@ -47,7 +47,7 @@ public class FSMBot extends TurretBot {
     final protected double flipperGround = 0.16;
     final protected double flipperLoadReady = 0.55;
     final protected double flipperLoading = 0.7;
-    final protected double flipperClearTurret = 0.4;
+    final protected double flipperClearTurret = 0.5;
 
     final protected double scorerLoading = 0;
     protected double scorerScoreReady = 0.72;
@@ -279,7 +279,7 @@ public class FSMBot extends TurretBot {
                         }
                         break;
                     case EXTENDING_STAGE_1:
-                        if (timeSince.milliseconds() > 100) {
+                        if (timeSince.milliseconds() > 50) {
                             RobotLog.d("MAN: extending stage 1");
 
                             flipper.setPosition(flipperClearTurret);
