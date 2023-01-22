@@ -105,6 +105,14 @@ public class FourWheelDriveBot extends BotBot{
         driveByVector(drive, strafe, twist, driveMultiplier);
     }
 
+    public void driveByHandConeCentric(double right_stick_x) {
+        if (right_stick_x > 0) {
+            driveByVector(0, 0.2, 0.2, 1);
+        } else if (right_stick_x < 0) {
+            driveByVector(0, -0.2, -0.2, 1);
+        }
+    }
+
     public void driveByVector(double drive, double strafe, double twist, double multiplier) {
         double[] speeds = {
                 (drive + strafe + twist),

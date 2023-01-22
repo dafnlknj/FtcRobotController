@@ -29,7 +29,8 @@ public class ManualDriveDemo extends LinearOpMode {
         while (opModeIsActive()) {
 
 // driving code
-            robot.driveByHandFieldCentric(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x, gamepad1.left_stick_button, gamepad2.left_stick_x, gamepad2.left_stick_y, gamepad2.right_stick_x, gamepad2.left_stick_button);
+            robot.driveByHandFieldCentric(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x, gamepad1.left_stick_button, gamepad2.left_stick_x, gamepad2.left_stick_y, 0, gamepad2.left_stick_button);
+            robot.driveByHandConeCentric(gamepad2.right_stick_x);
 
             robot.togglePinch(gamepad1.x);
             robot.controlScorer(gamepad2.left_trigger, gamepad2.right_trigger);
