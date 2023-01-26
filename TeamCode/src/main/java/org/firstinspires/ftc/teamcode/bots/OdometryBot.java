@@ -18,8 +18,7 @@ import java.io.OutputStreamWriter;
 
 public class OdometryBot extends GyroBot {
 
-    //public DcMotor horizontal = null;
-    public DcMotor verticalLeft = null;
+    public DcMotor horizontal = null;
     public DcMotor verticalRight = null;
     //public Servo odometryRaise = null;
 
@@ -38,7 +37,7 @@ public class OdometryBot extends GyroBot {
     final int vRDirection = -1;
     final int hDirection = 1;
     final double diameter = 18971; // actually diameter
-    final double hDiameter = 1899; //radius of horizontal encoder
+    final double hDiameter = 19500; //radius of horizontal encoder
 
     double vLOffset, vROffset, hOffset = 0;
 
@@ -75,8 +74,6 @@ public class OdometryBot extends GyroBot {
         super.init(ahwMap);
         initDriveHardwareMap(ahwMap);
         context = hwMap.appContext;
-//        odometryRaise = hwMap.get(Servo.class, "odometryRaise");
-//        odometryRaise.setPosition(0.88);
         opMode.telemetry.addData("Status", "Init Complete");
         opMode.telemetry.update();
         robotLogTimer.reset();
@@ -84,15 +81,15 @@ public class OdometryBot extends GyroBot {
 
     private void initDriveHardwareMap(HardwareMap ahwMap){
 
-//        horizontal = ahwMap.dcMotor.get(horizontalEncoderName);
-//        horizontal.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        horizontal.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        horizontal = ahwMap.dcMotor.get(horizontalEncoderName);
+        horizontal.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        horizontal.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 //        verticalLeft = ahwMap.dcMotor.get(verticalLeftEncoderName);
 //        verticalLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 //        verticalLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-//        verticalRight = ahwMap.dcMotor.get(verticalRightEncoderName);
-//        verticalRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        verticalRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        verticalRight = ahwMap.dcMotor.get(verticalRightEncoderName);
+        verticalRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        verticalRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         opMode.telemetry.addData("Status", "Hardware Map Init Complete");
         opMode.telemetry.update();
@@ -463,20 +460,19 @@ public class OdometryBot extends GyroBot {
 //
     protected void onTick(){
     //        RobotLog.d(String.format("Position, heading: %.2f, %.2f, %.2f", xBlue, yBlue, thetaDEG));
-    //        RobotLog.d(String.format("v1: %d v2: %d h: %d", leftFront.getCurrentPosition(), rightFront.getCurrentPosition(), horizontal.getCurrentPosition()));
 
-//        opMode.telemetry.addData("X:", xBlue);
-//        opMode.telemetry.addData("Y:", yBlue);
-//        opMode.telemetry.addData("Theta:", thetaDEG);
-//        opMode.telemetry.addData("v1", leftFront.getCurrentPosition());
-//        opMode.telemetry.addData("h", rightFront.getCurrentPosition());
-//        opMode.telemetry.addData("h diameter", (int)((thetaDEG*360)/(rightFront.getCurrentPosition() * Math.PI)));
+        opMode.telemetry.addData("X:", xBlue);
+        opMode.telemetry.addData("Y:", yBlue);
+        opMode.telemetry.addData("Theta:", thetaDEG);
+        opMode.telemetry.addData("v1", verticalRight.getCurrentPosition());
+        opMode.telemetry.addData("h", horizontal.getCurrentPosition());
+        opMode.telemetry.addData("h diameter", (int)((thetaDEG*360)/(horizontal.getCurrentPosition() * Math.PI)));
 //        opMode.telemetry.update();
 
         //outputEncoders();
         super.onTick();
         thetaDEG = -getDeltaAngle();
-        calculateCaseThree(-leftFront.getCurrentPosition() - vLOffset, rightFront.getCurrentPosition() - hOffset, thetaDEG);
+        calculateCaseThree(-verticalRight.getCurrentPosition() - vLOffset, -horizontal.getCurrentPosition() - hOffset, thetaDEG);
         if (isCoordinateDriving) {
             driveToCoordinateUpdate(globalTargetX, globalTargetY, globalTargetTheta, globalTolerance, globalMagnitude);
         }

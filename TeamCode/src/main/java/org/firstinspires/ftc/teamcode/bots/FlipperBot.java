@@ -22,6 +22,8 @@ public class FlipperBot extends OdometryBot {
 
     ElapsedTime grabberTimer = new ElapsedTime();
 
+    public boolean isAuto = true;
+
     public FlipperBot(LinearOpMode opMode) {
         super(opMode);
     }
@@ -30,12 +32,18 @@ public class FlipperBot extends OdometryBot {
     public void init(HardwareMap ahwMap) {
         super.init(ahwMap);
         flipper = hwMap.get(Servo.class, "flipper");
-        flipper.setPosition(0.64);
         flipAngle = hwMap.get(Servo.class, "flipAngle");
-        flipAngle.setPosition(0.6);
         grabber = hwMap.get(Servo.class, "grabber");
-        grabber.setPosition(grabberOpened);
         grabberSensor = hwMap.get(DistanceSensor.class, "grabberSensor");
+        if (isAuto) {
+            flipper.setPosition(0.64);
+            flipAngle.setPosition(0.6);
+            grabber.setPosition(grabberOpened);
+        } else {
+            flipper.setPosition(0.4);
+            flipAngle.setPosition(0.6);
+            grabber.setPosition(grabberOpened);
+        }
     }
 
     public double getGrabberDistance() {

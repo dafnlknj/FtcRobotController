@@ -23,6 +23,8 @@ public class ManualDriveDemo extends LinearOpMode {
     @Override
     public void runOpMode() {
 
+        robot.isAuto = false;
+
         robot.init(hardwareMap);
 
         waitForStart();

@@ -36,7 +36,7 @@ import org.openftc.easyopencv.OpenCvInternalCamera;
 import java.util.ArrayList;
 
 @Autonomous
-public class AprilTagBot extends OdometryBot
+public class AprilTagBot extends FSMBot
 {
     OpenCvCamera camera;
     AprilTagPipeline aprilTagDetectionPipeline;

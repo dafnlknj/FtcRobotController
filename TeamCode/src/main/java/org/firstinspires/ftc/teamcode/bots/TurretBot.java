@@ -20,7 +20,7 @@ public class TurretBot extends FlipperBot {
     protected int maxExtension = 2000;
     final protected int loadingExtension = 255;
     protected int turretZero = 0;
-    protected int turretSet = 0;
+    public int turretSet = 0;
 
     protected int extenderTargetPosition = 0;
     protected int turretTargetPosition = turretZero;
@@ -40,9 +40,7 @@ public class TurretBot extends FlipperBot {
     public void init(HardwareMap ahwMap) {
         super.init(ahwMap);
         pinch = hwMap.get(Servo.class, "pinch");
-        pinch.setPosition(pinchClosed);
         scorer = hwMap.get(Servo.class, "scorer");
-        scorer.setPosition(0.14);
         extender = hwMap.get(DcMotor.class, "extender");
         extender.setPower(0);
         extender.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -55,19 +53,24 @@ public class TurretBot extends FlipperBot {
         turret.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         touchSensor = hwMap.get(DigitalChannel.class, "touch");
         touchSensor.setMode(DigitalChannel.Mode.INPUT);
+        if (isAuto) {
+            pinch.setPosition(pinchClosed);
+            scorer.setPosition(0.14);
+        } else {
+            pinch.setPosition(pinchOpened);
+            scorer.setPosition(0.14);
+        }
     }
 
     protected void onTick() {
         super.onTick();
         opMode.telemetry.addData("extender:", extender.getCurrentPosition());
+        opMode.telemetry.addData("turret", turret.getCurrentPosition());
         opMode.telemetry.addData("scorer:", scorer.getPosition());
         if (extenderSafe) {
             extenderRunToPosition(extenderTargetPosition, 0.7);
         }
         turretRunToPosition(turretTargetPosition, 0.5);
-        if (!touchSensor.getState()) {
-            opMode.telemetry.addData("touch", true);
-        }
         //opMode.telemetry.update();
     }
 

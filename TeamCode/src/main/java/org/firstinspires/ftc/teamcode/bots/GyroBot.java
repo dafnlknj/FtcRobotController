@@ -72,7 +72,7 @@ public class GyroBot extends FourWheelDriveBot {
             //opMode.telemetry.addData("SLOW", driveMultiplier);
         }
 
-        double angle = -getDeltaAngle();
+        double angle = -getDeltaAngle() + 180;
 
         double drive2 = Math.min(1.0, strafe*Math.sin(Math.toRadians(angle)) + drive*Math.cos(Math.toRadians(angle)));
         double strafe2 = Math.min(1.0, strafe*Math.cos(Math.toRadians(angle)) - drive*Math.sin(Math.toRadians(angle)));
