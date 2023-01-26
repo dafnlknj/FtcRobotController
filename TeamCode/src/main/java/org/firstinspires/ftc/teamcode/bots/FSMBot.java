@@ -48,9 +48,9 @@ public class FSMBot extends TurretBot {
     final protected double flipperLoading = 0.7;
     final protected double flipperClearTurret = 0.5;
 
-    final protected double scorerLoading = 0;
-    protected double scorerScoreReady = 0.72;
-    protected double scorerScoring = 0.8;
+    final protected double scorerLoading = 0.11;
+    protected double scorerScoreReady = 0.83;
+    protected double scorerScoring = 0.91;
 
     private boolean shouldGrabCone = false;
     private boolean shouldScoreCone = false;
@@ -111,18 +111,18 @@ public class FSMBot extends TurretBot {
         switch (heightIndex) {
             case 0:
                 maxExtension = 800;
-                scorerScoreReady = 0.77;
-                scorerScoring = 0.77;
+                scorerScoreReady = 0.88;
+                scorerScoring = 0.88;
                 break;
             case 1:
                 maxExtension = 1000;
-                scorerScoreReady = 0.77;
-                scorerScoring = 0.77;
+                scorerScoreReady = 0.88;
+                scorerScoring = 0.88;
                 break;
             case 2:
                 maxExtension = 2000;
-                scorerScoreReady = 0.73;
-                scorerScoring = 0.73;
+                scorerScoreReady = 0.84;
+                scorerScoring = 0.84;
                 break;
         }
     }

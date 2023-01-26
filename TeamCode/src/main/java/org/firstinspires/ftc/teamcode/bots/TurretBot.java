@@ -14,8 +14,8 @@ public class TurretBot extends FlipperBot {
     public DigitalChannel touchSensor = null;
 
     //two positions of the wobble servo
-    final double pinchClosed = 0.18;
-    final double pinchOpened = 0.4; //0.25
+    final double pinchClosed = 0.45;
+    final double pinchOpened = Math.min(pinchClosed + 0.22, 1); // diff: 0.22
     final protected int minExtension = 0;
     protected int maxExtension = 2000;
     final protected int loadingExtension = 255;
@@ -55,10 +55,10 @@ public class TurretBot extends FlipperBot {
         touchSensor.setMode(DigitalChannel.Mode.INPUT);
         if (isAuto) {
             pinch.setPosition(pinchClosed);
-            scorer.setPosition(0.14);
+            scorer.setPosition(0.25);
         } else {
             pinch.setPosition(pinchOpened);
-            scorer.setPosition(0.14);
+            scorer.setPosition(0.11);
         }
     }
 
