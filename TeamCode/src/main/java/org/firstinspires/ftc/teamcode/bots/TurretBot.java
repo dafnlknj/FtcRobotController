@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.bots;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -17,8 +18,11 @@ public class TurretBot extends FlipperBot {
     final double pinchClosed = 0.45;
     final double pinchOpened = Math.min(pinchClosed + 0.22, 1); // diff: 0.22
     final protected int minExtension = 0;
-    protected int maxExtension = 2000;
-    protected int loadingExtension = 275;
+    final protected int highExtension = 2050;
+    final protected int mediumExtension = 1100;
+    final protected int lowExtension = 600;
+    protected int maxExtension;
+    protected int loadingExtension = 135;
     protected int turretZero = 0;
     public int turretSet = 0;
 
@@ -42,6 +46,7 @@ public class TurretBot extends FlipperBot {
         pinch = hwMap.get(Servo.class, "pinch");
         scorer = hwMap.get(Servo.class, "scorer");
         extender = hwMap.get(DcMotor.class, "extender");
+        extender.setDirection(DcMotorSimple.Direction.REVERSE);
         extender.setPower(0);
         extender.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         extender.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -68,7 +73,7 @@ public class TurretBot extends FlipperBot {
         opMode.telemetry.addData("turret", turret.getCurrentPosition());
         opMode.telemetry.addData("scorer:", scorer.getPosition());
         if (extenderSafe) {
-            extenderRunToPosition(extenderTargetPosition, 0.7);
+            extenderRunToPosition(extenderTargetPosition, 1);
         }
         turretRunToPosition(turretTargetPosition, 0.5);
         //opMode.telemetry.update();
@@ -100,9 +105,9 @@ public class TurretBot extends FlipperBot {
 
     public void controlExtender(float up, float down) {
         if (up > 0 && extender.getCurrentPosition() < maxExtension) {
-            extenderTargetPosition = (int)(extenderTargetPosition + up * 50);
+            extenderTargetPosition = (int)(extenderTargetPosition + up * 20);
         } else if (down > 0 && extender.getCurrentPosition() > minExtension) {
-            extenderTargetPosition = (int)(extenderTargetPosition - down * 50);
+            extenderTargetPosition = (int)(extenderTargetPosition - down * 20);
         }
     }
 

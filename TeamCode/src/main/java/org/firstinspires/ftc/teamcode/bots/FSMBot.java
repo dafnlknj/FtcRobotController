@@ -43,9 +43,9 @@ public class FSMBot extends TurretBot {
     private ElapsedTime timeSince2 = new ElapsedTime(100);
     private ElapsedTime timeSince3 = new ElapsedTime(300);
 
-    final protected double flipperGround = 0.16;
-    final protected double flipperLoadReady = 0.55;
-    final protected double flipperLoading = 0.63;
+    final protected double flipperGround = 0.19;
+    final protected double flipperLoadReady = 0.57;
+    final protected double flipperLoading = 0.68;
     final protected double flipperClearTurret = 0.5;
     public double flipperStackHeight = 0.3;
 
@@ -111,17 +111,17 @@ public class FSMBot extends TurretBot {
     private void setDropHeight() {
         switch (heightIndex) {
             case 0:
-                maxExtension = 800;
+                maxExtension = lowExtension;
                 scorerScoreReady = 0.88;
                 scorerScoring = 0.88;
                 break;
             case 1:
-                maxExtension = 1000;
+                maxExtension = mediumExtension;
                 scorerScoreReady = 0.88;
                 scorerScoring = 0.88;
                 break;
             case 2:
-                maxExtension = 2000;
+                maxExtension = highExtension;
                 scorerScoreReady = 0.86;
                 scorerScoring = 0.86;
                 break;
@@ -331,7 +331,7 @@ public class FSMBot extends TurretBot {
                         }
                         break;
                     case EXTENDING_STAGE_2:
-                        if (timeSince.milliseconds() > 1500) {
+                        if (timeSince.milliseconds() > 500) {
                             RobotLog.d("MAN: extending stage 2");
 
                             flipper.setPosition(flipperClearTurret);

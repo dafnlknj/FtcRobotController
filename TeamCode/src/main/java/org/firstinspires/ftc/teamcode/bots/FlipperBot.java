@@ -42,7 +42,7 @@ public class FlipperBot extends OdometryBot {
         } else {
             flipper.setPosition(0.4);
             flipAngle.setPosition(0.6);
-            grabber.setPosition(grabberOpened);
+            grabber.setPosition(grabberClosed);
         }
     }
 
@@ -108,7 +108,7 @@ public class FlipperBot extends OdometryBot {
         if (flipper.getPosition() < 0.5) {
             flipAngle.setPosition(Math.min(flipper.getPosition() * 1.96 + 0.161, 0.85));
         } else {
-            flipAngle.setPosition(0.6);
+            flipAngle.setPosition(0.55);
         }
     }
 }
