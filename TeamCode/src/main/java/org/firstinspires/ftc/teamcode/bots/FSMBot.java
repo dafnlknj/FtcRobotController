@@ -45,10 +45,11 @@ public class FSMBot extends TurretBot {
 
     final protected double flipperGround = 0.16;
     final protected double flipperLoadReady = 0.55;
-    final protected double flipperLoading = 0.7;
+    final protected double flipperLoading = 0.63;
     final protected double flipperClearTurret = 0.5;
+    public double flipperStackHeight = 0.3;
 
-    final protected double scorerLoading = 0.11;
+    final protected double scorerLoading = 0.105;
     protected double scorerScoreReady = 0.83;
     protected double scorerScoring = 0.91;
 
@@ -121,8 +122,8 @@ public class FSMBot extends TurretBot {
                 break;
             case 2:
                 maxExtension = 2000;
-                scorerScoreReady = 0.84;
-                scorerScoring = 0.84;
+                scorerScoreReady = 0.86;
+                scorerScoring = 0.86;
                 break;
         }
     }
@@ -133,9 +134,21 @@ public class FSMBot extends TurretBot {
         }
     }
 
+    public void setNewLoadingExtension(boolean button) {
+        if (button) {
+            loadingExtension = extender.getCurrentPosition();
+        }
+    }
+
     public void clearTurretRotation(boolean button) {
         if (button) {
             turretSet = 0;
+        }
+    }
+
+    public void waitForState(ConeState state) {
+        while (opMode.opModeIsActive() && state != coneState) {
+            sleep(10);
         }
     }
 
@@ -177,6 +190,26 @@ public class FSMBot extends TurretBot {
 
     public void scoreCone(boolean button, boolean button2) {
         shouldScoreCone = button || button2;
+    }
+
+    public void autoScoring(double distance, double height, boolean left) {
+        flipperStackHeight = height;
+        if (left) {
+            driveToCoordinate(0 - distance, 61000, 90, 750, 0.2);
+        } else {
+            driveToCoordinate(0 + distance, 61000, -90, 750, 0.2);
+        }
+        waitForState(FSMBot.ConeState.GRAB_CONE);
+        grabCone(true);
+        if (left) {
+            driveToCoordinate(0 - distance, 61000, 90, 750, 0.2);
+        } else {
+            driveToCoordinate(0 + distance, 61000, -90, 750, 0.2);
+        }
+        waitForState(FSMBot.ConeState.LOADING_DONE);
+        loadingStateTrigger = true;
+        waitForState(FSMBot.ConeState.SCORING);
+        scoreCone(true, false);
     }
 
     protected void onTick() {
@@ -298,7 +331,7 @@ public class FSMBot extends TurretBot {
                         }
                         break;
                     case EXTENDING_STAGE_2:
-                        if (timeSince.milliseconds() > 500) {
+                        if (timeSince.milliseconds() > 1500) {
                             RobotLog.d("MAN: extending stage 2");
 
                             flipper.setPosition(flipperClearTurret);
@@ -382,10 +415,10 @@ public class FSMBot extends TurretBot {
                         }
                         break;
                     case READY:
-                        if (readyToGrab) {
+                        if (timeSince.milliseconds() > 300) {
                             RobotLog.d("MAN: ready");
 
-                            flipper.setPosition(flipperGround);
+                            flipper.setPosition(flipperStackHeight);
                             openGrabber();
 
                             scorer.setPosition(scorerLoading);
@@ -401,7 +434,7 @@ public class FSMBot extends TurretBot {
                         if (shouldGrabCone) {
                             RobotLog.d("MAN: grab cone");
 
-                            flipper.setPosition(flipperGround);
+                            flipper.setPosition(flipperStackHeight);
                             closeGrabber();
 
                             scorer.setPosition(scorerLoading);
@@ -479,7 +512,7 @@ public class FSMBot extends TurretBot {
                         }
                         break;
                     case EXTENDING_STAGE_2:
-                        if (timeSince.milliseconds() > 500) {
+                        if (timeSince.milliseconds() > 800) {
                             RobotLog.d("MAN: extending stage 2");
 
                             flipper.setPosition(flipperClearTurret);
@@ -513,7 +546,7 @@ public class FSMBot extends TurretBot {
                         if (timeSince.milliseconds() > 200) {
                             RobotLog.d("MAN: dropping");
 
-                            flipper.setPosition(flipperClearTurret);
+                            flipper.setPosition(flipperStackHeight);
                             openGrabber();
 
                             scorer.setPosition(scorerScoreReady);
@@ -521,7 +554,7 @@ public class FSMBot extends TurretBot {
                             openPinch();
                             turretTargetPosition = turretSet;
 
-                            coneState = ConeState.DRIVING;
+                            coneState = ConeState.READY;
                             timeSince.reset();
                         }
                         break;

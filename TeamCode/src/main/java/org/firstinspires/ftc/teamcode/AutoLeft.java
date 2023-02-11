@@ -18,35 +18,41 @@ public class AutoLeft extends LinearOpMode {
         robot.init(hardwareMap);
         waitForStart();
         int pos = robot.detect(); // 0 = left, 1 = middle, 2 = right
-        robot.driveToCoordinate(0, 61000, 0, 750, 0.2);
+        robot.driveToCoordinate(-40000, -3000, 0, 750, 0.2);
+        robot.waitForCoordinateDrive();
+        robot.driveToCoordinate(-40000, -86000, -90, 750, 0.2);
+        robot.waitForCoordinateDrive();
+        robot.driveToCoordinate(-25000, -86000, -90, 750, 0.2);
         robot.waitForCoordinateDrive();
         robot.readyToGrab = true;
-        robot.sleep(3000);
-        robot.turretSet = 430;
+        robot.waitForState(FSMBot.ConeState.LOADING_DONE);
+        robot.turretSet = -430;
         robot.loadingStateTrigger = true;
-        robot.sleep(6000);
+        robot.waitForState(FSMBot.ConeState.SCORING);
+        robot.sleep(1000);
         robot.scoreCone(true, false);
+        robot.flipperStackHeight = 0.41;
+        robot.waitForState(FSMBot.ConeState.GRAB_CONE);
         robot.sleep(3000);
-
+        robot.driveToCoordinate(-37000, -86000, -90, 750, 0.2);
+        robot.waitForCoordinateDrive();
+        robot.grabCone(true);
+        robot.sleep(1000);
+        robot.driveToCoordinate(-25000, -86000, -90, 750, 0.2);
+        robot.waitForCoordinateDrive();
+        robot.waitForState(FSMBot.ConeState.LOADING_DONE);
+        robot.loadingStateTrigger = true;
+        robot.waitForState(FSMBot.ConeState.SCORING);
+        robot.sleep(1000);
+        robot.scoreCone(true, false);
+        robot.waitForState(FSMBot.ConeState.GRAB_CONE);
+        robot.sleep(5000);
         if (pos == 0) {
-            robot.driveToCoordinate(0, 45000, 0, 750, 0.2);
-            robot.waitForCoordinateDrive();
-            robot.driveToCoordinate(-40000, 45000, 0, 750, 0.2);
-            robot.waitForCoordinateDrive();
-            robot.driveToCoordinate(-40000, 65000, 0, 750, 0.2);
-            robot.waitForCoordinateDrive();
-            robot.sleep(200);
 
         } else if (pos == 1) {
 
         } else {
-            robot.driveToCoordinate(0, 45000, 0, 750, 0.2);
-            robot.waitForCoordinateDrive();
-            robot.driveToCoordinate(40000, 45000, 0, 750, 0.2);
-            robot.waitForCoordinateDrive();
-            robot.driveToCoordinate(40000, 65000, 0, 750, 0.2);
-            robot.waitForCoordinateDrive();
-            robot.sleep(200);
+
         }
     }
 }

@@ -12,16 +12,14 @@ import org.firstinspires.ftc.teamcode.bots.SnarmBot;
 
 public class TestAuto extends LinearOpMode {
 
-    protected OdometryBot robot = new OdometryBot(this); //replace FourWheelDriveBot with whichever Bot is required
+    protected FSMBot robot = new FSMBot(this);
 
     @Override
     public void runOpMode() {
         robot.init(hardwareMap);
         waitForStart();
-//        robot.driveToCoordinate(0, 0, 90, 500, 0.15);
-//        robot.waitForCoordinateDrive();
-        robot.turnInPlace(90, 500, 0.15);
-        robot.waitForTurnInPlace();
+        robot.driveToCoordinate(0, 50000, 90, 500, 0.15);
+        robot.waitForCoordinateDrive();
 
         //robot.driveToCoordinate(0, -40000, 90, 500, 0.15);
 //        robot.goToAngle(90, 0.15);
