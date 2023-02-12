@@ -26,18 +26,20 @@ public class AutoLeft extends LinearOpMode {
         robot.waitForCoordinateDrive();
         robot.driveToCoordinate(drivingLaneX, stackY, -90, 1000, 0.5, false);
         robot.waitForCoordinateDrive();
-        robot.sleep(500);
+        //robot.sleep(500);
         robot.driveToCoordinate(droppingPosX, stackY, -90, 700, 0.15, true);
         robot.waitForCoordinateDrive();
         robot.readyToGrab = true;
         robot.waitForState(FSMBot.ConeState.LOADING_DONE);
-        robot.turretSet = -398;
+        robot.turretSet = -405;
         robot.loadingStateTrigger = true;
 
-        robot.autoScoring(2000, 0.38, true);
-        robot.autoScoring(1400, 0.32, true);
-        robot.autoScoring(750, 0.26, true);
-        robot.autoScoring(750, 0.22, true);
+        robot.autoScoring(7.5, 0.1, 0.38, true);
+        robot.autoScoring(7.5, 0.1, 0.32, true);
+        robot.autoScoring(7.5, 0.1, 0.26, true);
+        robot.autoScoring(7.5, 0.1, 0.22, true);
+        //robot.autoScoring(8.3, 0.2, 0.16, true);
+
 
         robot.waitForState(FSMBot.ConeState.SCORING);
         robot.sleep(800);
@@ -63,17 +65,14 @@ public class AutoLeft extends LinearOpMode {
         if (pos == 0) {
             robot.driveToCoordinate(drivingLaneX, stackY, -90, 1000, 0.5, true);
             robot.waitForCoordinateDrive();
-            robot.sleep(500);
         } else if (pos == 1) {
             robot.driveToCoordinate(10000, stackY, 0, 1000, 0.5, true);
             robot.waitForCoordinateDrive();
             robot.driveToCoordinate(10000, -70000, 0, 1000, 0.5, true);
             robot.waitForCoordinateDrive();
-            robot.sleep(500);
         } else {
-            robot.driveToCoordinate(45000, stackY, -90, 1000, 0.5, true);
+            robot.driveToCoordinate(50000, stackY, -90, 1000, 0.5, true);
             robot.waitForCoordinateDrive();
-            robot.sleep(500);
         }
     }
 }

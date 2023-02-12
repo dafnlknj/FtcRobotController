@@ -197,7 +197,7 @@ public class FSMBot extends TurretBot {
         shouldScoreCone = button || button2;
     }
 
-    public void autoScoring(double distance, double height, boolean left) {
+    public void autoScoring(double distance, double power, double height, boolean left) {
         flipperStackHeight = height;
         waitForState(FSMBot.ConeState.SCORING);
         sleep(800);
@@ -211,7 +211,7 @@ public class FSMBot extends TurretBot {
 //        } else {
 //            driveToCoordinate(0 + distance, 61000, -90, 750, 0.2, true);
 //        }
-        driveUntilDistance(7.5);
+        driveUntilDistance(distance, power);
 //        if (left) {
 //            driveToCoordinate(-21000 - distance - 10000, -86000, -90, 750, 0.1);
 //        } else {
@@ -230,9 +230,9 @@ public class FSMBot extends TurretBot {
         waitForState(ConeState.LOADING_READY);
         loadingReadyTrigger = true;
         if (left) {
-            driveToCoordinate(-19000, -87000, -90, 300, 0.1, true);
+            driveToCoordinate(-20000, -87000, -90, 300, 0.1, true);
         } else {
-            driveToCoordinate(0 + distance, 61000, -90, 750, 0.1, true);
+            driveToCoordinate(0, 61000, -90, 750, 0.1, true);
         }
         sleep(500);
         waitForState(FSMBot.ConeState.LOADING_DONE);
@@ -249,10 +249,10 @@ public class FSMBot extends TurretBot {
         }
     }
 
-    protected void driveUntilDistance(double distance) {
+    protected void driveUntilDistance(double distance, double power) {
         while (opMode.opModeIsActive() && getGrabberDistance() > distance) {
             sleep(10);
-            driveByVector(0.1, 0, 0, 1);
+            driveByVector(0.2, 0, 0, 1);
         }
         driveByVector(0, 0, 0, 1);
     }

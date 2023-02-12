@@ -21,7 +21,7 @@ public class DriveTest extends LinearOpMode {
         robot.waitForState(FSMBot.ConeState.LOADING_DONE);
         robot.turretSet = -390;
         robot.loadingStateTrigger = true;
-        robot.autoScoring(2000, 0.38, true);
+        robot.autoScoring(7.5, 0.2, 0.38, true);
         robot.sleep(1000);
         robot.waitForState(FSMBot.ConeState.SCORING);
         robot.sleep(500);
