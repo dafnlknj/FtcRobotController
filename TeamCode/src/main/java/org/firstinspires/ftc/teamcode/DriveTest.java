@@ -7,17 +7,26 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.teamcode.bots.FSMBot;
 
 @Autonomous(name="Drive Test", group="Tests")
-@Disabled
 public class DriveTest extends LinearOpMode {
 
     protected FSMBot robot = new FSMBot(this);
 
     @Override
     public void runOpMode() {
+        robot.isAuto = true;
         robot.init(hardwareMap);
         waitForStart();
-        robot.driveStraightByTime(robot.DIRECTION_LEFT, 500, 0.5);
-        robot.driveStraightByGyro(robot.DIRECTION_LEFT, 10, 0.5, false, 0, true);
+        robot.sleep(2000);
+        robot.readyToGrab = true;
+        robot.waitForState(FSMBot.ConeState.LOADING_DONE);
+        robot.turretSet = -390;
+        robot.loadingStateTrigger = true;
+        robot.autoScoring(2000, 0.38, true);
+        robot.sleep(1000);
+        robot.waitForState(FSMBot.ConeState.SCORING);
+        robot.sleep(500);
+        robot.scoreCone(true, false);
+        robot.sleep(1000);
 
 
 //        int distanceFromStart = Math.abs(robot.horizontal.getCurrentPosition());

@@ -189,7 +189,18 @@ public class OdometryBot extends GyroBot {
         }
     }
 
-    public void driveToCoordinate(double xTarget, double yTarget, double targetTheta, int tolerance, double magnitude) {
+    public void driveToCoordinate(double xTarget, double yTarget, double targetTheta, int tolerance, double magnitude, boolean brake) {
+        if (brake) {
+            leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            leftRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        } else {
+            leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+            rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+            leftRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+            rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        }
         if (xBlue > xTarget) {
             distanceToTarget = - Math.sqrt(Math.pow(xBlue - xTarget, 2) + Math.pow(yBlue - yTarget, 2));
         } else {
@@ -222,8 +233,8 @@ public class OdometryBot extends GyroBot {
         double rawDriveAngle = Math.toDegrees(Math.atan2(xTarget - xBlue, yTarget - yBlue));
         driveAngle = -(rawDriveAngle - thetaDEG);
         magnitude = Math.min(1.0, Math.abs(drivePID.getOutput(distanceToTarget/5000, 0))*2);
-        if (Math.abs(distanceToTarget) < 10000) {
-            magnitude = Math.max(0.2, Math.min(1.0, Math.abs(drivePID.getOutput(distanceToTarget/5000, 0))));
+        if (Math.abs(distanceToTarget) < 8000) {
+            magnitude = Math.max(0.13, Math.min(1.0, Math.abs(drivePID.getOutput(distanceToTarget/5000, 0))));
         }
         if (xBlue > xTarget) {
             distanceToTarget = - Math.sqrt(Math.pow(xBlue - xTarget, 2) + Math.pow(yBlue - yTarget, 2));

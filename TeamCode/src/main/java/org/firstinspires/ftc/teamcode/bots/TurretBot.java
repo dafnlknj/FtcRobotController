@@ -22,7 +22,7 @@ public class TurretBot extends FlipperBot {
     final protected int mediumExtension = 1100;
     final protected int lowExtension = 600;
     protected int maxExtension;
-    protected int loadingExtension = 135;
+    protected int loadingExtension = 150;
     protected int turretZero = 0;
     public int turretSet = 0;
 
@@ -50,7 +50,7 @@ public class TurretBot extends FlipperBot {
         extender.setPower(0);
         extender.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         extender.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        extender.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        extender.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         turret = hwMap.get(DcMotor.class, "turret");
         turret.setPower(0);
         turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);

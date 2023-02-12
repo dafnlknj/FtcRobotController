@@ -15,10 +15,12 @@ public class FlipperBot extends OdometryBot {
     public Servo grabber = null;
     protected DistanceSensor grabberSensor = null;
 
-    final double grabberClosed = 0.6;
-    final double grabberOpened = 0.45; //0.3
+    final double grabberClosed = 0.67;
+    final double grabberOpened = 0.52; //0.3
 
     boolean isGrabberOpen = true;
+
+    protected boolean shouldAngleSync = true;
 
     ElapsedTime grabberTimer = new ElapsedTime();
 
@@ -102,13 +104,15 @@ public class FlipperBot extends OdometryBot {
 
     protected void onTick() {
         super.onTick();
+        opMode.telemetry.addData("distance:", getGrabberDistance());
         opMode.telemetry.addData("flip:", flipper.getPosition());
         opMode.telemetry.addData("angle:", flipAngle.getPosition());
-//        opMode.telemetry.update();
-        if (flipper.getPosition() < 0.5) {
-            flipAngle.setPosition(Math.min(flipper.getPosition() * 1.96 + 0.161, 0.85));
-        } else {
-            flipAngle.setPosition(0.55);
+        if (shouldAngleSync) {
+            if (flipper.getPosition() < 0.5) {
+                flipAngle.setPosition(Math.min(flipper.getPosition() * 1.57 + 0.193, 0.85));
+            } else {
+                flipAngle.setPosition(0.55);
+            }
         }
     }
 }
