@@ -35,7 +35,7 @@ public class OdometryBot extends GyroBot {
 
     final int vLDirection = 1;
     final int vRDirection = 1;
-    final int hDirection = 1;
+    final int hDirection = -1;
     final double diameter = 18719; // actually diameter: 285/609 = d/40000
     final double hDiameter = 24302; //diameter of horizontal encoder: 185*2/609 = hD/40000
 
