@@ -49,7 +49,6 @@ import com.qualcomm.robotcore.util.Range;
  */
 
 @TeleOp(name="Pushbot: 1 servo", group="Pushbot")
-@Disabled
 public class PushbotDrive1 extends LinearOpMode {
 
     /* Declare OpMode members. */
