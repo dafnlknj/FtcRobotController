@@ -34,6 +34,7 @@ package org.firstinspires.ftc.teamcode.bots;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
@@ -50,9 +51,9 @@ public class FSMBot extends TurretBot {
     final protected double flipperClearTurret = 0.5;
     public double flipperStackHeight = 0.3;
 
-    final protected double scorerLoading = 0.105;
-    protected double scorerScoreReady = 0.83;
-    protected double scorerScoring = 0.91;
+    final protected double scorerLoading = 0.135; //0.105 for "normal" servos?
+    protected double scorerScoreReady = 0.86; //0.83
+    protected double scorerScoring = 0.94; //0.91
 
     private boolean shouldGrabCone = false;
     private boolean shouldScoreCone = false;
@@ -78,6 +79,7 @@ public class FSMBot extends TurretBot {
         LOADING_DONE,
         EXTENDING_STAGE_1,
         EXTENDING_STAGE_2,
+        EXTENDING_STAGE_3,
         SCORING,
         DROPPING,
         DRIVING
@@ -117,18 +119,18 @@ public class FSMBot extends TurretBot {
         switch (heightIndex) {
             case 0:
                 maxExtension = lowExtension;
-                scorerScoreReady = 0.88;
-                scorerScoring = 0.88;
+                scorerScoreReady = 0.91;
+                scorerScoring = 0.91;
                 break;
             case 1:
                 maxExtension = mediumExtension;
-                scorerScoreReady = 0.88;
-                scorerScoring = 0.88;
+                scorerScoreReady = 0.91;
+                scorerScoring = 0.91;
                 break;
             case 2:
                 maxExtension = highExtension;
-                scorerScoreReady = 0.86;
-                scorerScoring = 0.86;
+                scorerScoreReady = 0.89;
+                scorerScoring = 0.89;
                 break;
         }
     }
@@ -152,9 +154,21 @@ public class FSMBot extends TurretBot {
     }
 
     public void waitForState(ConeState state) {
+        RobotLog.d("AUTO: wait for state started");
         while (opMode.opModeIsActive() && state != coneState) {
-            sleep(10);
+            if (opMode.opModeIsActive()) {
+                RobotLog.d("WAIT: opModeIsActive is TRUE");
+            } else {
+                RobotLog.d("WAIT: opModeIsActive is FALSE");
+            }
+            if (state != coneState) {
+                RobotLog.d(String.format("WAIT: state is %s != %s", state.toString(), coneState.toString()));
+            } else {
+                RobotLog.d("WAIT: state is FALSE");
+            }
+            sleep(50, "waiting for state");
         }
+        RobotLog.d("AUTO: wait for state completed");
     }
 
     public void readyToGrab(boolean button, boolean button2) {
@@ -199,12 +213,12 @@ public class FSMBot extends TurretBot {
 
     public void autoScoring(double distance, double power, double height, boolean left) {
         flipperStackHeight = height;
-        waitForState(FSMBot.ConeState.SCORING);
-        sleep(800);
+        waitForState(ConeState.SCORING);
+        sleep(200, "problem?");
         RobotLog.d("STARTED");
         scoreCone(true, false);
         RobotLog.d("SCORED");
-        sleep(500);
+        //sleep(500);
         waitForState(FSMBot.ConeState.GRAB_CONE);
 //        if (left) {
 //            driveToCoordinate(-24000 - distance, -87000, -90, 500, 0.1, true);
@@ -230,11 +244,10 @@ public class FSMBot extends TurretBot {
         waitForState(ConeState.LOADING_READY);
         loadingReadyTrigger = true;
         if (left) {
-            driveToCoordinate(-20000, -87000, -90, 300, 0.1, true);
+            driveToCoordinate(-18500, -86000, -90, 300, 0.1, true);
         } else {
             driveToCoordinate(0, 61000, -90, 750, 0.1, true);
         }
-        sleep(500);
         waitForState(FSMBot.ConeState.LOADING_DONE);
         loadingStateTrigger = true;
     }
@@ -259,6 +272,9 @@ public class FSMBot extends TurretBot {
 
     protected void onTick() {
         opMode.telemetry.addData("HEIGHT:", heightIndex);
+        if (coneState == ConeState.SCORING) {
+            RobotLog.d(String.format("AUTO: hubba hubba %s", coneState.toString()));
+        }
         doubleCheckConeScored();
         switch (coneConeState) {
             case 0:
@@ -461,7 +477,7 @@ public class FSMBot extends TurretBot {
                         }
                         break;
                     case READY:
-                        if (timeSince.milliseconds() > 300) {
+                        if (timeSince.milliseconds() > 500) {
                             RobotLog.d("AUTO: ready");
 
                             flipper.setPosition(flipperStackHeight);
@@ -546,7 +562,7 @@ public class FSMBot extends TurretBot {
                         }
                         break;
                     case EXTENDING_STAGE_1:
-                        if (timeSince.milliseconds() > 50) {
+                        if (timeSince.milliseconds() > 20) {
                             RobotLog.d("AUTO: extending stage 1");
 
                             flipper.setPosition(flipperClearTurret);
@@ -562,8 +578,23 @@ public class FSMBot extends TurretBot {
                         }
                         break;
                     case EXTENDING_STAGE_2:
-                        if (timeSince.milliseconds() > 500) {
+                        if (extender.getCurrentPosition() > 1000) {
                             RobotLog.d("AUTO: extending stage 2");
+
+                            flipper.setPosition(flipperClearTurret);
+                            openGrabber();
+
+                            scorer.setPosition(scorerScoreReady);
+                            extenderTargetPosition = maxExtension;
+                            closePinch();
+                            turretTargetPosition = turretSet;
+
+                            coneState = ConeState.EXTENDING_STAGE_3;
+                        }
+                        break;
+                    case EXTENDING_STAGE_3:
+                        if (extender.getCurrentPosition() > maxExtension - 100) {
+                            RobotLog.d("AUTO: extending stage 3");
 
                             flipper.setPosition(flipperClearTurret);
                             openGrabber();
@@ -577,7 +608,7 @@ public class FSMBot extends TurretBot {
                         }
                         break;
                     case SCORING:
-                        RobotLog.d("AUTO: scoring wait");
+                        RobotLog.d(String.format("AUTO: scoring wait, %d", extender.getCurrentPosition()));
                         if (shouldScoreCone) {
                             shouldScoreCone = false;
                             RobotLog.d("AUTO: scoring");
@@ -595,10 +626,10 @@ public class FSMBot extends TurretBot {
                         }
                         break;
                     case DROPPING:
-                        if (timeSince.milliseconds() > 200) {
+                        if (timeSince.milliseconds() > 100) {
                             RobotLog.d("AUTO: dropping");
 
-                            flipper.setPosition(flipperStackHeight);
+                            flipper.setPosition(flipperClearTurret);
                             openGrabber();
 
                             scorer.setPosition(scorerScoreReady);
@@ -622,6 +653,186 @@ public class FSMBot extends TurretBot {
                             extenderTargetPosition = 0;
                             openPinch();
                             turretTargetPosition = turretZero;
+                        }
+                        break;
+                }
+                break;
+            case 2:
+                switch (coneState) {
+                    case INIT_READY:
+                        opMode.telemetry.addData("init ready", readyToGrab);
+                        if (readyToGrab) {
+                            RobotLog.d("MAN: init ready");
+
+                            flipper.setPosition(0.4);
+                            openGrabber();
+
+                            scorer.setPosition(0.4);
+                            extenderTargetPosition = loadingExtension;
+                            openPinch();
+                            turretTargetPosition = turretZero;
+
+                            coneState = ConeState.READY;
+                        }
+                        break;
+                    case READY:
+                        opMode.telemetry.addData("ready", readyToGrab);
+                        if (readyToGrab) {
+                            RobotLog.d("MAN: ready");
+
+                            flipper.setPosition(flipperGround);
+                            openGrabber();
+
+                            scorer.setPosition(scorerLoading);
+                            extenderTargetPosition = loadingExtension;
+                            openPinch();
+                            turretTargetPosition = turretZero;
+
+                            coneState = ConeState.GRAB_CONE;
+                        }
+                        break;
+                    case GRAB_CONE:
+                        opMode.telemetry.addData("grab cone", readyToGrab);
+                        if (shouldGrabCone || getGrabberDistance() < 6) {
+                            RobotLog.d("MAN: grab cone");
+
+                            flipper.setPosition(flipperGround);
+                            closeGrabber();
+
+                            scorer.setPosition(scorerLoading);
+                            extenderTargetPosition = loadingExtension;
+                            openPinch();
+                            turretTargetPosition = turretZero;
+
+                            coneState = ConeState.LOADING_READY;
+                            timeSince.reset();
+                        }
+                        break;
+                    case LOADING_READY:
+                        if (timeSince.milliseconds() > 100) {
+                            RobotLog.d("MAN: loading ready");
+
+                            flipper.setPosition(flipperLoadReady);
+                            closeGrabber();
+
+                            scorer.setPosition(scorerLoading);
+                            extenderTargetPosition = loadingExtension;
+                            openPinch();
+                            turretTargetPosition = turretZero;
+
+                            coneState = ConeState.LOADING;
+                            timeSince.reset();
+                        }
+                        break;
+                    case LOADING:
+                        if (timeSince.milliseconds() > 750) {
+                            RobotLog.d("MAN: loading");
+
+                            flipper.setPosition(flipperLoading);
+                            closeGrabber();
+
+                            scorer.setPosition(scorerLoading);
+                            extenderTargetPosition = loadingExtension;
+                            openPinch();
+                            turretTargetPosition = turretZero;
+
+                            coneState = ConeState.LOADING_DONE;
+                            timeSince.reset();
+                        }
+                        break;
+                    case LOADING_DONE:
+                        if (!touchSensor.getState() || timeSince.milliseconds() > 2000) {
+                            RobotLog.d("MAN: loading done");
+
+                            flipper.setPosition(flipperLoading);
+                            openGrabber();
+
+                            scorer.setPosition(scorerLoading);
+                            extenderTargetPosition = loadingExtension;
+                            closePinch();
+                            turretTargetPosition = turretZero;
+
+                            coneState = ConeState.EXTENDING_STAGE_1;
+                            timeSince.reset();
+                        }
+                        break;
+                    case EXTENDING_STAGE_1:
+                        if (timeSince.milliseconds() > 50) {
+                            RobotLog.d("MAN: extending stage 1");
+
+                            flipper.setPosition(flipperClearTurret);
+                            openGrabber();
+
+                            scorer.setPosition(scorerScoreReady);
+                            extenderTargetPosition = maxExtension;
+                            closePinch();
+                            turretTargetPosition = turretZero;
+
+                            coneState = ConeState.EXTENDING_STAGE_2;
+                            timeSince.reset();
+                        }
+                        break;
+                    case EXTENDING_STAGE_2:
+                        if (timeSince.milliseconds() > 500) {
+                            RobotLog.d("MAN: extending stage 2");
+
+                            flipper.setPosition(flipperClearTurret);
+                            openGrabber();
+
+                            scorer.setPosition(scorerScoreReady);
+                            extenderTargetPosition = maxExtension;
+                            closePinch();
+                            turretTargetPosition = turretSet;
+
+                            coneState = ConeState.SCORING;
+                        }
+                        break;
+                    case SCORING:
+                        if (shouldScoreCone) {
+                            RobotLog.d("MAN: scoring");
+
+                            flipper.setPosition(flipperClearTurret);
+                            openGrabber();
+
+                            scorer.setPosition(scorerScoring);
+                            extenderTargetPosition = maxExtension;
+                            closePinch();
+                            turretTargetPosition = turretSet;
+
+                            coneState = ConeState.DROPPING;
+                            timeSince.reset();
+                        }
+                        break;
+                    case DROPPING:
+                        if (timeSince.milliseconds() > 200) {
+                            RobotLog.d("MAN: dropping");
+
+                            flipper.setPosition(flipperClearTurret);
+                            openGrabber();
+
+                            scorer.setPosition(scorerScoreReady);
+                            extenderTargetPosition = maxExtension;
+                            openPinch();
+                            turretTargetPosition = turretSet;
+
+                            coneState = ConeState.DRIVING;
+                            timeSince.reset();
+                        }
+                        break;
+                    case DRIVING:
+                        if (timeSince.milliseconds() > 300 || drivingStateTrigger) {
+                            drivingStateTrigger = false;
+                            RobotLog.d("MAN: driving");
+
+                            flipper.setPosition(0.5);
+                            openGrabber();
+
+                            scorer.setPosition(scorerLoading);
+                            extenderTargetPosition = loadingExtension;
+                            openPinch();
+                            turretTargetPosition = turretZero;
+
+                            coneState = ConeState.READY;
                         }
                         break;
                 }

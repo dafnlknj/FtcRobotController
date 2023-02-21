@@ -3,17 +3,11 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.bots.FSMBot;
-import org.firstinspires.ftc.teamcode.bots.FlipperBot;
-import org.firstinspires.ftc.teamcode.bots.FourWheelDriveBot;
-import org.firstinspires.ftc.teamcode.bots.LEDBot;
-import org.firstinspires.ftc.teamcode.bots.OdometryBot;
-import org.firstinspires.ftc.teamcode.bots.TurretBot;
 
-@TeleOp(name = "Manual Drive (Demo)")
-public class ManualDriveDemo extends LinearOpMode {
+@TeleOp(name = "Manual Drive (Presentation)")
+public class ManualDrivePresentation extends LinearOpMode {
 
     //ElapsedTime runtime = new ElapsedTime();    // Use to determine when end game is starting.
 
@@ -26,6 +20,8 @@ public class ManualDriveDemo extends LinearOpMode {
         robot.isAuto = false;
 
         robot.init(hardwareMap);
+
+        robot.coneConeState = 2;
 
         waitForStart();
         while (opModeIsActive()) {
@@ -42,15 +38,13 @@ public class ManualDriveDemo extends LinearOpMode {
             robot.controlTurret(gamepad1.dpad_left, gamepad1.dpad_right);
             robot.controlTurret(gamepad2.dpad_left, gamepad2.dpad_right);
 
-            //robot.controlFlipper(gamepad1.dpad_up, gamepad1.dpad_down);
+            robot.controlFlipper(gamepad1.dpad_up, gamepad1.dpad_down);
             //robot.controlAngle(gamepad2.dpad_up, gamepad2.dpad_down);
-            robot.selectDropHeight(gamepad1.dpad_up, gamepad1.dpad_down, gamepad2.dpad_up, gamepad2.dpad_down);
+            //robot.selectDropHeight(gamepad1.dpad_up, gamepad1.dpad_down, gamepad2.dpad_up, gamepad2.dpad_down);
             robot.grabCone(gamepad1.left_bumper);
             robot.scoreCone(gamepad1.right_bumper, gamepad2.right_bumper);
             robot.readyToGrab(gamepad1.a, gamepad2.a);
             robot.grabberUp(gamepad1.x, gamepad2.x);
-            robot.resetTurretZero(gamepad2.b);
-            robot.setNewLoadingExtension(gamepad2.y);
 
             robot.stopExtender(gamepad2.left_bumper);
 

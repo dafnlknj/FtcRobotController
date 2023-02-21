@@ -65,7 +65,7 @@ public class GyroBot extends FourWheelDriveBot {
 //            }
 //            opMode.telemetry.update();
             //RobotLog.d("stick button pressed");
-            driveMultiplier = 0.55;
+            driveMultiplier = 0.9;
             //opMode.telemetry.addData("FAST", driveMultiplier);
         } else {
             driveMultiplier = 0.5;
@@ -81,11 +81,12 @@ public class GyroBot extends FourWheelDriveBot {
         driveByVector(drive2, strafe2, twist, driveMultiplier);
     }
 
-    public void resetAngle() {
-
-        Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-        RobotLog.d(String.format("Reset Angle : %.3f , %.3f, %.3f", angles.firstAngle, angles.secondAngle, angles.thirdAngle));
-        startAngle = angles.firstAngle;
+    public void resetAngle(boolean button) {
+        if (button) {
+            Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            RobotLog.d(String.format("Reset Angle : %.3f , %.3f, %.3f", angles.firstAngle, angles.secondAngle, angles.thirdAngle));
+            startAngle = angles.firstAngle;
+        }
     }
 
     public double getAngle() {

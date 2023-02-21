@@ -19,10 +19,10 @@ public class TurretBot extends FlipperBot {
     final double pinchOpened = Math.min(pinchClosed + 0.22, 1); // diff: 0.22
     final protected int minExtension = 0;
     final protected int highExtension = 2050;
-    final protected int mediumExtension = 1100;
-    final protected int lowExtension = 600;
+    final protected int mediumExtension = 1200;
+    final protected int lowExtension = 300;
     protected int maxExtension;
-    protected int loadingExtension = 150;
+    protected int loadingExtension = 140; //150
     protected int turretZero = 0;
     public int turretSet = 0;
 
