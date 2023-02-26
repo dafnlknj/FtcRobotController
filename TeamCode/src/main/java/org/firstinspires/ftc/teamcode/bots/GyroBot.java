@@ -73,6 +73,8 @@ public class GyroBot extends FourWheelDriveBot {
         }
 
         double angle = -getDeltaAngle() + 180;
+        opMode.telemetry.addData("raw angle: ", getAngle());
+        opMode.telemetry.addData("math: ", angle);
 
         double drive2 = Math.min(1.0, strafe*Math.sin(Math.toRadians(angle)) + drive*Math.cos(Math.toRadians(angle)));
         double strafe2 = Math.min(1.0, strafe*Math.cos(Math.toRadians(angle)) - drive*Math.sin(Math.toRadians(angle)));
@@ -83,9 +85,7 @@ public class GyroBot extends FourWheelDriveBot {
 
     public void resetAngle(boolean button) {
         if (button) {
-            Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            RobotLog.d(String.format("Reset Angle : %.3f , %.3f, %.3f", angles.firstAngle, angles.secondAngle, angles.thirdAngle));
-            startAngle = angles.firstAngle;
+            startAngle = getAngle();
         }
     }
 
@@ -98,14 +98,14 @@ public class GyroBot extends FourWheelDriveBot {
 //        opMode.telemetry.addData("Start angle", startAngle);
 //        opMode.telemetry.update();
 
-        return angles.firstAngle - startAngle;
+        return angles.firstAngle;
     }
 
     public double getDeltaAngle() {
 
         double angle = getAngle();
         double deltaAngle = angle - startAngle;
-        RobotLog.d(String.format("Delta Angle : %.3f from %.3f", deltaAngle, angle));
+        //RobotLog.d(String.format("Delta Angle : %.3f from %.3f", deltaAngle, angle));
 
         return deltaAngle;
     }
@@ -493,6 +493,7 @@ public class GyroBot extends FourWheelDriveBot {
 //    }
 
     protected void onTick() {
+        opMode.telemetry.addData("angle:", getDeltaAngle());
         super.onTick();
     }
 }

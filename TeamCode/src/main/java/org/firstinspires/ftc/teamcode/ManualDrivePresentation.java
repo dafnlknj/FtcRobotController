@@ -46,7 +46,7 @@ public class ManualDrivePresentation extends LinearOpMode {
             robot.readyToGrab(gamepad1.a, gamepad2.a);
             robot.grabberUp(gamepad1.x, gamepad2.x);
 
-            robot.stopExtender(gamepad2.left_bumper);
+            //robot.stopExtender(gamepad2.left_bumper);
 
             //robot.opMode.telemetry.addData("time:", runtime.milliseconds());
             robot.opMode.telemetry.update();

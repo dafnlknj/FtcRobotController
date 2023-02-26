@@ -16,7 +16,7 @@ public class AutoLeft extends LinearOpMode {
     public void runOpMode() {
         int drivingLaneX = -33000;
         int droppingPosX = -20000;
-        int stackY = -86000;
+        int stackY = -86500;
 
         robot.isAuto = true;
         robot.init(hardwareMap);
@@ -31,42 +31,27 @@ public class AutoLeft extends LinearOpMode {
         robot.waitForCoordinateDrive();
         robot.readyToGrab = true;
         robot.waitForState(FSMBot.ConeState.LOADING_DONE);
-        robot.turretSet = -405;
+        robot.turretSet = -370; //405
         robot.loadingStateTrigger = true;
 
-        robot.autoScoring(8.5, 0.1, 0.38, true);
-        robot.autoScoring(8.2, 0.1, 0.32, true);
-        robot.autoScoring(8.2, 0.1, 0.26, true);
-        robot.autoScoring(8.2, 0.1, 0.22, true);
+        robot.autoScoring(8.1 - 1.3, 0.1, 0.38, true);
+        robot.autoScoring(7.8 - 1.3, 0.1, 0.32, true);
+        robot.autoScoring(7.8 - 1.3, 0.1, 0.26, true);
+        robot.autoScoring(7.8 - 1.3, 0.1, 0.22, true);
         //robot.autoScoring(8.3, 0.2, 0.16, true);
 
 
         robot.waitForState(FSMBot.ConeState.SCORING);
         //robot.sleep(800);
         robot.scoreCone(true, false);
-        robot.sleep(500);
-
-//        robot.flipperStackHeight = 0.41;
-//        robot.waitForState(FSMBot.ConeState.GRAB_CONE);
-//        robot.sleep(3000);
-//        robot.driveToCoordinate(-37000, -86000, -90, 750, 0.2);
-//        robot.waitForCoordinateDrive();
-//        robot.grabCone(true);
-//        robot.sleep(1000);
-//        robot.driveToCoordinate(-25000, -86000, -90, 750, 0.2);
-//        robot.waitForCoordinateDrive();
-//        robot.waitForState(FSMBot.ConeState.LOADING_DONE);
-//        robot.loadingStateTrigger = true;
-//        robot.waitForState(FSMBot.ConeState.SCORING);
-//        robot.sleep(1000);
-//        robot.scoreCone(true, false);
-//        robot.waitForState(FSMBot.ConeState.GRAB_CONE);
+        robot.sleep(900);
         robot.coneState = FSMBot.ConeState.DRIVING;
         if (pos == 0) {
             robot.driveToCoordinate(-29000, stackY, 0, 1000, 0.5, true);
             robot.waitForCoordinateDrive();
             robot.driveToCoordinate(-29000, -70000, 0, 1000, 0.5, true);
             robot.waitForCoordinateDrive();
+
         } else if (pos == 1) {
             robot.driveToCoordinate(10000, stackY, 0, 1000, 0.5, true);
             robot.waitForCoordinateDrive();
@@ -74,6 +59,8 @@ public class AutoLeft extends LinearOpMode {
             robot.waitForCoordinateDrive();
         } else {
             robot.driveToCoordinate(50000, stackY, -90, 1000, 0.5, true);
+            robot.waitForCoordinateDrive();
+            robot.driveToCoordinate(50000, -70000, 0, 1000, 0.5, true);
             robot.waitForCoordinateDrive();
         }
     }

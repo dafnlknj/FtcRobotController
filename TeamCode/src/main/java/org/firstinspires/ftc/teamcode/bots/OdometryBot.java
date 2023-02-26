@@ -167,14 +167,14 @@ public class OdometryBot extends GyroBot {
 //    }
 
     protected void onTick(){
-        RobotLog.d(String.format("Position, heading: %.2f, %.2f, %.2f", xBlue, yBlue, thetaDEG));
+        //RobotLog.d(String.format("Position, heading: %.2f, %.2f, %.2f", xBlue, yBlue, thetaDEG));
 
         opMode.telemetry.addData("X:", xBlue);
         opMode.telemetry.addData("Y:", yBlue);
         opMode.telemetry.addData("Theta:", thetaDEG);
-        opMode.telemetry.addData("v1", verticalRight.getCurrentPosition());
-        opMode.telemetry.addData("h", horizontal.getCurrentPosition());
-        opMode.telemetry.addData("h diameter", (int)((thetaDEG*360)/(horizontal.getCurrentPosition() * Math.PI)));
+        //opMode.telemetry.addData("v1", verticalRight.getCurrentPosition());
+        //opMode.telemetry.addData("h", horizontal.getCurrentPosition());
+        //opMode.telemetry.addData("h diameter", (int)((thetaDEG*360)/(horizontal.getCurrentPosition() * Math.PI)));
 //        opMode.telemetry.update();
 
         //outputEncoders();

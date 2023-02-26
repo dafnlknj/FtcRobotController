@@ -19,10 +19,10 @@ public class TurretBot extends FlipperBot {
     final double pinchOpened = Math.min(pinchClosed + 0.22, 1); // diff: 0.22
     final protected int minExtension = 0;
     final protected int highExtension = 2050;
-    final protected int mediumExtension = 1200;
-    final protected int lowExtension = 300;
+    final protected int mediumExtension = 1050;
+    final protected int lowExtension = 200;
     protected int maxExtension;
-    protected int loadingExtension = 140; //150
+    protected int loadingExtension = 142; //150
     protected int turretZero = 0;
     public int turretSet = 0;
 
@@ -60,30 +60,23 @@ public class TurretBot extends FlipperBot {
         touchSensor.setMode(DigitalChannel.Mode.INPUT);
         if (isAuto) {
             pinch.setPosition(pinchClosed);
-            scorer.setPosition(0.25);
+            scorer.setPosition(0.25); //0.25
         } else {
             pinch.setPosition(pinchOpened);
-            scorer.setPosition(0.11);
+            scorer.setPosition(0.11); //0.11
         }
     }
 
     protected void onTick() {
         super.onTick();
-        opMode.telemetry.addData("extender:", extender.getCurrentPosition());
-        opMode.telemetry.addData("turret", turret.getCurrentPosition());
-        opMode.telemetry.addData("scorer:", scorer.getPosition());
+//        opMode.telemetry.addData("extender:", extender.getCurrentPosition());
+//        opMode.telemetry.addData("turret", turret.getCurrentPosition());
+//        opMode.telemetry.addData("scorer:", scorer.getPosition());
         if (extenderSafe) {
             extenderRunToPosition(extenderTargetPosition, 1);
         }
         turretRunToPosition(turretTargetPosition, 0.5);
         //opMode.telemetry.update();
-    }
-
-    public void handOff(boolean button) {
-        if (button) {
-            togglePinch(true);
-            toggleGrabber(true);
-        }
     }
 
     public void goToLoadingPosition(boolean button) {
