@@ -104,14 +104,14 @@ public class FlipperBot extends OdometryBot {
 
     protected void onTick() {
         super.onTick();
-//        opMode.telemetry.addData("distance:", getGrabberDistance());
-//        opMode.telemetry.addData("flip:", flipper.getPosition());
-//        opMode.telemetry.addData("angle:", flipAngle.getPosition());
+        opMode.telemetry.addData("distance:", getGrabberDistance());
+        opMode.telemetry.addData("flip:", flipper.getPosition());
+        opMode.telemetry.addData("angle:", flipAngle.getPosition());
         if (shouldAngleSync) {
             if (flipper.getPosition() < 0.5) {
-                flipAngle.setPosition(Math.min(flipper.getPosition() * 1.57 + 0.193, 0.85));
+                flipAngle.setPosition(Math.min(flipper.getPosition() * 1.67 + 0.179, 0.85));
             } else {
-                flipAngle.setPosition(0.55);
+                flipAngle.setPosition(0.55); //0.55
             }
         }
     }

@@ -156,10 +156,10 @@ public class FourWheelDriveBot extends BotBot{
     public void init(HardwareMap ahwMap) {
         super.init(ahwMap);
 
-        leftFront = (DcMotorEx) hwMap.get(DcMotor.class, "leftFront");
-        rightFront = (DcMotorEx) hwMap.get(DcMotor.class, "rightFront");
-        leftRear = (DcMotorEx) hwMap.get(DcMotor.class, "leftRear");
-        rightRear = (DcMotorEx) hwMap.get(DcMotor.class, "rightRear");
+        leftFront = hwMap.get(DcMotorEx.class, "leftFront");
+        rightFront = hwMap.get(DcMotorEx.class, "rightFront");
+        leftRear = hwMap.get(DcMotorEx.class, "leftRear");
+        rightRear = hwMap.get(DcMotorEx.class, "rightRear");
         leftFront.setDirection(DcMotor.Direction.REVERSE);
         leftRear.setDirection(DcMotor.Direction.REVERSE);
 

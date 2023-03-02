@@ -13,8 +13,8 @@ public class AutoRight extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        int drivingLaneX = 36000;
-        int droppingPosX = 21000;
+        int drivingLaneX = 34500;
+        int droppingPosX = 22500;
         int stackY = -85600;
 
         robot.isAuto = true;
@@ -43,7 +43,9 @@ public class AutoRight extends LinearOpMode {
         robot.waitForState(FSMBot.ConeState.SCORING);
         //robot.sleep(800);
         robot.scoreCone(true, false);
-        robot.sleep(900);
+        robot.waitForState(FSMBot.ConeState.GRAB_CONE);
+
+        //robot.sleep(900);
         robot.coneState = FSMBot.ConeState.DRIVING;
         if (pos == 0) {
             robot.driveToCoordinate(-45000, stackY, 90, 1000, 0.5, true);

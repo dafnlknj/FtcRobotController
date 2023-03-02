@@ -99,7 +99,7 @@ public class TurretBot extends FlipperBot {
     public void controlExtender(float up, float down) {
         if (up > 0 && extender.getCurrentPosition() < maxExtension) {
             extenderTargetPosition = (int)(extenderTargetPosition + up * 20);
-        } else if (down > 0 && extender.getCurrentPosition() > minExtension) {
+        } else if (down > 0) {
             extenderTargetPosition = (int)(extenderTargetPosition - down * 20);
         }
     }
