@@ -24,7 +24,7 @@ public class OdometryBot extends GyroBot {
 
     String verticalLeftEncoderName = "v1", verticalRightEncoderName = "v2", horizontalEncoderName = "h";
 
-    public double xBlue = 0, yBlue = 0, xBlueChange = 0, yBlueChange = 0, thetaDEG = 0, previousThetaDEG = 0;
+    public double xBlue = 0, yBlue = 0, xBlueChange = 0, yBlueChange = 0, thetaDEG = 0, thetaRAD = 0;
     double xRed = 0, yRed = 0, xRedChange = 0, yRedChange = 0;
     double hError = 0;
 
@@ -37,7 +37,10 @@ public class OdometryBot extends GyroBot {
     final int vRDirection = 1;
     final int hDirection = -1;
     final double diameter = 18719; // actually diameter: 285/609 = d/40000
-    final double hDiameter = 24302; //diameter of horizontal encoder: 185*2/609 = hD/40000
+    final double hDiameter = 17997; //diameter of horizontal encoder: 185*2/609 = hD/40000      24302
+    final double leftX = -(diameter/2); //134mm
+    final double rightX = (diameter/2); //152mm
+    final double hY = -(hDiameter/2); //137mm
 
     double vLOffset, vROffset, hOffset = 0;
 
@@ -54,6 +57,9 @@ public class OdometryBot extends GyroBot {
     long elapsedTime = 0;
     public boolean isCoordinateDriving = false;
     public boolean isTurningInPlace = false;
+
+    MiniPID drivePID = new MiniPID(0.085, 0, 0);//i: 0.006 d: 0.06
+    MiniPID twistPID = new MiniPID(0.035, 0, 0);
 
     double globalTargetX = 0;
     double globalTargetY = 0;
@@ -106,33 +112,45 @@ public class OdometryBot extends GyroBot {
         double lC = vL - previousVL;
         double rC = vR - previousVR;
 
-//        angleChange = ((lC - rC) / (Math.PI * diameter * 2) * 360);
+        angleChange = ((lC - rC) / (Math.PI * diameter * 2) * 360);
+        angleChange = (lC - rC)/(rightX - leftX);
 //        angleChange = (lC - rC)/(2 * diameter);
+//
+//        angleDEG = angleDEG + angleChange;
+        thetaRAD = thetaRAD - angleChange;
+        thetaDEG = Math.toDegrees(thetaRAD);
 
-        //angleDEG = angleDEG + angleChange;
-        //thetaDEG = angleDEG;
+        //thetaDEG = getDeltaAngle();
 
-        thetaDEG = getDeltaAngle();
         //angleChange = angleDEG - previousThetaDEG;
 
-        hError = (lC - rC)/(2 * diameter) * hDiameter;
+        hError = (lC - rC)/(diameter * 2) * hDiameter;
 
         double hC = h - previousH;
 
         xRedChange = hC + hError;
+        //xRedChange = hC - (hY * angleChange);
         yRedChange = (lC + rC)/2;
-        //yRedChange = lC;
+        //yRedChange = ((lC * rightX) - (rC * leftX))/(rightX - leftX);
 
-        xBlueChange = Math.cos(Math.toRadians(thetaDEG - 90)) * xRedChange + Math.cos(Math.toRadians(thetaDEG)) * yRedChange;
-        yBlueChange = Math.sin(Math.toRadians(thetaDEG)) * yRedChange + Math.sin(Math.toRadians(thetaDEG - 90)) * xRedChange;
+        xBlueChange = Math.cos(thetaRAD - (Math.PI/2)) * xRedChange + Math.cos(thetaRAD) * yRedChange;
+        yBlueChange = Math.sin(thetaRAD) * yRedChange + Math.sin(thetaRAD - (Math.PI/2)) * xRedChange;
+//        xBlueChange = xRedChange * Math.cos(thetaRAD) + yRedChange * Math.sin(thetaRAD);
+//        yBlueChange = yRedChange * Math.cos(thetaRAD) + xRedChange * Math.sin(thetaRAD);
 
         xBlue = xBlue + yBlueChange;
         yBlue = yBlue + xBlueChange;
+//        xBlue = xBlue + xBlueChange;
+//        yBlue = yBlue + yBlueChange;
 
         previousVL = vL;
         previousVR = vR;
         previousH = h;
         //previousThetaDEG = angleDEG;
+    }
+
+    public void reAngle() {
+        thetaRAD = Math.toRadians(getDeltaAngle());
     }
 
 //    public void resetOdometry(boolean button) {
@@ -167,14 +185,15 @@ public class OdometryBot extends GyroBot {
         opMode.telemetry.addData("X:", xBlue);
         opMode.telemetry.addData("Y:", yBlue);
         opMode.telemetry.addData("Theta:", thetaDEG);
-        //opMode.telemetry.addData("v1", verticalRight.getCurrentPosition());
-        //opMode.telemetry.addData("h", horizontal.getCurrentPosition());
+        opMode.telemetry.addData("vL", leftRear.getCurrentPosition());
+        opMode.telemetry.addData("vR", verticalRight.getCurrentPosition());
+        opMode.telemetry.addData("h", horizontal.getCurrentPosition());
         //opMode.telemetry.addData("h diameter", (int)((thetaDEG*360)/(horizontal.getCurrentPosition() * Math.PI)));
 //        opMode.telemetry.update();
 
         //outputEncoders();
         super.onTick();
-        thetaDEG = -getDeltaAngle();
+        //thetaDEG = -getDeltaAngle();
         calculateCaseThree(leftRear.getCurrentPosition() - vLOffset, -verticalRight.getCurrentPosition() - vROffset, -horizontal.getCurrentPosition() - hOffset);
         if (isCoordinateDriving) {
             driveToCoordinateUpdate(globalTargetX, globalTargetY, globalTargetTheta, globalTolerance, globalAngleTol, globalMagnitude);
@@ -198,7 +217,7 @@ public class OdometryBot extends GyroBot {
         } else {
             distanceToTarget = Math.sqrt(Math.pow(xBlue - xTarget, 2) + Math.pow(yBlue - yTarget, 2));
         }
-        RobotLog.d(String.format("BlueX: %f BlueY: %f Theta: %f", xBlue, yBlue, thetaDEG));
+        //RobotLog.d(String.format("BlueX: %f BlueY: %f Theta: %f", xBlue, yBlue, thetaDEG));
         globalTargetX = xTarget;
         globalTargetY = yTarget;
         globalTargetTheta = targetTheta;
@@ -220,8 +239,6 @@ public class OdometryBot extends GyroBot {
     }
 
     public void driveToCoordinateUpdate(double xTarget, double yTarget, double targetTheta, int tolerance, double angleTol, double magnitude) {
-        MiniPID drivePID = new MiniPID(0.075, 0.006, 0.125);//i: 0.006 d: 0.06
-        MiniPID twistPID = new MiniPID(0.025, 0.005, 0.05);
         drivePID.setOutputLimits(magnitude);
         twistPID.setOutputLimits(0.6);
         thetaDifference = targetTheta - thetaDEG;
@@ -230,7 +247,7 @@ public class OdometryBot extends GyroBot {
         driveAngle = -(rawDriveAngle - thetaDEG);
         magnitude = Math.min(1.0, Math.abs(drivePID.getOutput(distanceToTarget/5000, 0))*2);
         if (Math.abs(distanceToTarget) < 8000) {
-            magnitude = Math.max(0.15, Math.min(1.0, Math.abs(drivePID.getOutput(distanceToTarget/3300, 0))));
+            magnitude = Math.max(0.15, Math.min(1.0, Math.abs(drivePID.getOutput(distanceToTarget/1500, 0))));
         }
         if (xBlue > xTarget) {
             distanceToTarget = - Math.sqrt(Math.pow(xBlue - xTarget, 2) + Math.pow(yBlue - yTarget, 2));
@@ -255,7 +272,7 @@ public class OdometryBot extends GyroBot {
 
     public void waitForCoordinateDrive() {
         while (opMode.opModeIsActive() && isCoordinateDriving) {
-            sleep(10);
+            sleep(0, "wait for drive");
         }
     }
 

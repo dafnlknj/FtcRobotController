@@ -109,7 +109,7 @@ public class FlipperBot extends OdometryBot {
         opMode.telemetry.addData("angle:", flipAngle.getPosition());
         if (shouldAngleSync) {
             if (flipper.getPosition() < 0.5) {
-                flipAngle.setPosition(Math.min(flipper.getPosition() * 1.67 + 0.179, 0.85));
+                flipAngle.setPosition(Math.min(flipper.getPosition() * 1.67 + 0.179, 0.95));
             } else {
                 flipAngle.setPosition(0.55); //0.55
             }

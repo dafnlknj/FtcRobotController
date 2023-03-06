@@ -23,6 +23,7 @@ public class TurretBot extends FlipperBot {
     final protected int lowExtension = 200;
     protected int maxExtension;
     protected int loadingExtension = 142; //150
+    protected int autoOffset = 15;
     protected int turretZero = 0;
     public int turretSet = 0;
 
@@ -69,9 +70,9 @@ public class TurretBot extends FlipperBot {
 
     protected void onTick() {
         super.onTick();
-//        opMode.telemetry.addData("extender:", extender.getCurrentPosition());
+        opMode.telemetry.addData("extender:", extender.getCurrentPosition());
 //        opMode.telemetry.addData("turret", turret.getCurrentPosition());
-//        opMode.telemetry.addData("scorer:", scorer.getPosition());
+        opMode.telemetry.addData("scorer:", scorer.getPosition());
         if (extenderSafe) {
             extenderRunToPosition(extenderTargetPosition, 1);
         }
@@ -97,7 +98,7 @@ public class TurretBot extends FlipperBot {
     }
 
     public void controlExtender(float up, float down) {
-        if (up > 0 && extender.getCurrentPosition() < maxExtension) {
+        if (up > 0 && extender.getCurrentPosition() < 3000) {
             extenderTargetPosition = (int)(extenderTargetPosition + up * 20);
         } else if (down > 0) {
             extenderTargetPosition = (int)(extenderTargetPosition - down * 20);

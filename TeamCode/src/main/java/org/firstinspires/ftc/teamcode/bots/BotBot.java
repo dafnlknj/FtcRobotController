@@ -6,6 +6,8 @@ package org.firstinspires.ftc.teamcode.bots;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.robot.Robot;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import java.io.FileWriter;
@@ -60,6 +62,7 @@ public class BotBot {
 //        }
         try {
             RobotLog.d("onLoopWriter.write");
+            RobotLog.d(String.format("%d, %d, %d, %s\n", interval, timeElapsed, start - lastOnLoopFinished, label));
             onLoopWriter.write(String.format("%d, %d, %d, %s\n", interval, timeElapsed, start - lastOnLoopFinished, label));
         } catch (IOException e) {
             throw new RuntimeException("onloop file writer write failed: " + e.toString());
@@ -90,8 +93,10 @@ public class BotBot {
      * @param label
      */
     public void sleep(int milliseconds, String label){
-        for (int i=0; i < milliseconds; i+=50){
-            onLoop(50, label);
+        ElapsedTime sleepTimer = new ElapsedTime();
+        onLoop(10, label);
+        while (sleepTimer.milliseconds() < milliseconds){
+            onLoop(10, label);
         }
     }
 
