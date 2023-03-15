@@ -26,10 +26,11 @@ public class ManualDriveDemo extends LinearOpMode {
         robot.isAuto = false;
 
         robot.init(hardwareMap);
+        robot.turretPower = 0.5;
 
         waitForStart();
         while (opModeIsActive()) {
-
+            robot.turretPower = 0.5;
 // driving code
             robot.driveByHandFieldCentric(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x, gamepad1.left_stick_button, gamepad2.left_stick_x, gamepad2.left_stick_y, 0, gamepad2.left_stick_button);
             //robot.driveByHandConeCentric(gamepad2.right_stick_x);

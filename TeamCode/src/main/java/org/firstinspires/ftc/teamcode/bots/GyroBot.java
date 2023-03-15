@@ -65,10 +65,10 @@ public class GyroBot extends FourWheelDriveBot {
 //            }
 //            opMode.telemetry.update();
             //RobotLog.d("stick button pressed");
-            driveMultiplier = 0.9;
+            driveMultiplier = 1;
             //opMode.telemetry.addData("FAST", driveMultiplier);
         } else {
-            driveMultiplier = 0.5;
+            driveMultiplier = 0.3;
             //opMode.telemetry.addData("SLOW", driveMultiplier);
         }
 
