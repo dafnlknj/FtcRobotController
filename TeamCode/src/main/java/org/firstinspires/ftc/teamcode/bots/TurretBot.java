@@ -22,7 +22,7 @@ public class TurretBot extends FlipperBot {
     final protected int mediumExtension = 1050;
     final protected int lowExtension = 200;
     protected int maxExtension;
-    protected int loadingExtension = 142; //150
+    protected int loadingExtension = 152; //150
     protected int autoOffset = 15;
     protected int turretZero = 0;
     public int turretSet = 0;
@@ -76,7 +76,7 @@ public class TurretBot extends FlipperBot {
         if (extenderSafe) {
             extenderRunToPosition(extenderTargetPosition, 1);
         }
-        turretRunToPosition(turretTargetPosition, 0.5);
+        turretRunToPosition(turretTargetPosition, 0.2);
         //opMode.telemetry.update();
     }
 
@@ -172,6 +172,10 @@ public class TurretBot extends FlipperBot {
     protected void turretRunToPosition(int position, double power) {
         turret.setTargetPosition(position);
         turret.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        turret.setPower(power);
+        if (position == turretZero) {
+            turret.setPower(0.7);
+        } else {
+            turret.setPower(power);
+        }
     }
 }

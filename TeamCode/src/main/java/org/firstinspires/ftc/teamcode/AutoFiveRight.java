@@ -6,41 +6,41 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.teamcode.bots.AprilTagBot;
 import org.firstinspires.ftc.teamcode.bots.FSMBot;
 
-@Autonomous(name="Auto (Left 5 Cone)", group="Auto")
-public class AutoFiveLeft extends LinearOpMode {
+@Autonomous(name="Auto (Right 5 Cone)", group="Auto")
+public class AutoFiveRight extends LinearOpMode {
 
     protected AprilTagBot robot = new AprilTagBot(this);
 
     @Override
     public void runOpMode() {
         int drivingLaneX = -33000;
-        int droppingPosX = -22000;
-        int stackY = -84500;
+        int droppingPosX = 20000;
+        int stackY = -85600;
 
         robot.isAuto = true;
         robot.init(hardwareMap);
         waitForStart();
         int pos = robot.detect(); // 0 = left, 1 = middle, 2 = right
-        robot.driveToCoordinate(18000, -30000, 0, 20000, 1, false);
+        robot.driveToCoordinate(-18000, -30000, 0, 20000, 1, false);
         robot.waitForCoordinateDrive();
-        robot.driveToCoordinate(5000, stackY+5000, 0, 7000, 1, false);
+        robot.driveToCoordinate(-5000, stackY+5000, 0, 7000, 1, false);
         robot.waitForCoordinateDrive();
         //robot.sleep(500);
-        robot.driveToCoordinate(droppingPosX, stackY, -90, 700, 1.5, 0.25, true);
+        robot.driveToCoordinate(droppingPosX, stackY, 90, 700, 1.5, 0.25, true);
         robot.waitForCoordinateDrive();
-        robot.reAngle(0);
-        robot.driveToCoordinate(droppingPosX, stackY, -90, 500, 1, 0.1, true);
+        robot.reAngle(-2);
+        robot.driveToCoordinate(droppingPosX, stackY, 90, 500, 1, 0.1, true);
         robot.waitForCoordinateDrive();
         robot.readyToGrab = true;
         robot.waitForState(FSMBot.ConeState.EXTENDING_STAGE_2);
-        robot.turretSet = -400; //405
+        robot.turretSet = 405; //405
         robot.loadingStateTrigger = true;
 
-        robot.autoScoringNoDist(4500, 0.3, 0.39, true, false); //0.37
-        robot.autoScoringNoDist(4000, 0.3, 0.32, true, false); //0.32
-        robot.autoScoringNoDist(2000, 0.3, 0.26, true, false); //0.26
-        robot.autoScoringNoDist(1500, 0.3, 0.21, true, false);
-        robot.autoScoringNoDist(2000, 0.3, 0.16, true, true);
+        robot.autoScoringNoDist(6600, 0.3, 0.39, false, false); //0.37
+        robot.autoScoringNoDist(6000, 0.3, 0.32, false, false); //0.32
+        robot.autoScoringNoDist(4200, 0.3, 0.26, false, false); //0.26
+        robot.autoScoringNoDist(3500, 0.3, 0.21, false, false);
+        robot.autoScoringNoDist(3800, 0.3, 0.16, false, true);
 
         robot.waitForState(FSMBot.ConeState.SCORING);
         robot.sleep(500);
@@ -49,19 +49,19 @@ public class AutoFiveLeft extends LinearOpMode {
         //robot.sleep(900);
         robot.coneState = FSMBot.ConeState.DRIVING;
         if (pos == 0) {
-            robot.driveToCoordinate(-29000, stackY, 0, 3000, 1, false);
+            robot.driveToCoordinate(-50000, stackY, 90, 7000, 1, false);
             robot.waitForCoordinateDrive();
-            robot.driveToCoordinate(-29000, -70000, 0, 1000, 1, true);
+            robot.driveToCoordinate(-50000, -70000, 0, 1000, 1, true);
             robot.waitForCoordinateDrive();
         } else if (pos == 1) {
-            robot.driveToCoordinate(10000, stackY, 0, 3000, 1, false);
+            robot.driveToCoordinate(-10000, stackY, 0, 3000, 1, false);
             robot.waitForCoordinateDrive();
-            robot.driveToCoordinate(10000, -70000, 0, 1000, 1, true);
+            robot.driveToCoordinate(-10000, -70000, 0, 1000, 1, true);
             robot.waitForCoordinateDrive();
         } else {
-            robot.driveToCoordinate(50000, stackY, -90, 7000, 1, false);
+            robot.driveToCoordinate(29000, stackY, 0, 3000, 1, false);
             robot.waitForCoordinateDrive();
-            robot.driveToCoordinate(50000, -70000, 0, 1000, 1, true);
+            robot.driveToCoordinate(29000, -70000, 0, 1000, 1, true);
             robot.waitForCoordinateDrive();
         }
     }

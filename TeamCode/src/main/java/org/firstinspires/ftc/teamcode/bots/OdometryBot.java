@@ -149,8 +149,8 @@ public class OdometryBot extends GyroBot {
         //previousThetaDEG = angleDEG;
     }
 
-    public void reAngle() {
-        thetaRAD = Math.toRadians(getDeltaAngle());
+    public void reAngle(double offset) {
+            thetaRAD = Math.toRadians(getDeltaAngle() + offset);
     }
 
 //    public void resetOdometry(boolean button) {

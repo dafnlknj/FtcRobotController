@@ -76,6 +76,7 @@ public class FSMBot extends TurretBot {
     public enum ConeState {
         INIT_READY,
         READY,
+        READY_2,
         GRAB_CONE,
         LOADING_READY,
         LOADING,
@@ -283,9 +284,15 @@ public class FSMBot extends TurretBot {
         waitForState(FSMBot.ConeState.GRAB_CONE);
         sleep(200);
         if (left) {
-            driveToCoordinate(-21000 - distance, -84500, -90, 700, power, true);
+            driveToCoordinate(-21000 - distance, -84500, -90, 500, power, true);
+//            timeSince5.reset();
+//            while (opMode.opModeIsActive() && timeSince5.milliseconds() < 500) {
+//                sleep(10);
+//                driveByVector(0.3, 0, 0, 1);
+//            }
+//            driveByVector(0, 0, 0, 1);
         } else {
-            driveToCoordinate(0 + distance, 61000, -90, 750, 0.2, true);
+            driveToCoordinate(19000 + distance, -85600, 90, 700, power, true);
         }
 //        if (left) {
 //            driveToCoordinate(-21000 - distance - 10000, -86000, -90, 750, 0.1);
@@ -295,10 +302,10 @@ public class FSMBot extends TurretBot {
         if (last) {
             autoOffset = 0;
         } else {
-            autoOffset = 15;
+            autoOffset = 5;
         }
         waitForCoordinateDrive();
-        sleep(150);
+        sleep(100);
         grabCone(true);
         sleep(250);
 //        if (left) {
@@ -310,9 +317,9 @@ public class FSMBot extends TurretBot {
         waitForState(ConeState.LOADING_READY);
         loadingReadyTrigger = true;
         if (left) {
-            driveToCoordinate(-20000, -84500, -90, 700, 1, power, true);
+            driveToCoordinate(-22000, -84500, -90, 500, 1, power, true);
         } else {
-            driveToCoordinate(22500, -85600, 90, 300, 0.1, true);
+            driveToCoordinate(20000, -85600, 90, 500, 1, power, true);
         }
         waitForState(FSMBot.ConeState.LOADING_DONE);
         loadingStateTrigger = true;
@@ -375,6 +382,25 @@ public class FSMBot extends TurretBot {
                         opMode.telemetry.addData("ready", readyToGrab);
                         if (readyToGrab) {
                             RobotLog.d("MAN: ready");
+                            //shouldAngleSync = false;
+
+                            flipper.setPosition(flipperGround);
+                            //flipAngle.setPosition(0.9);
+                            openGrabber();
+
+                            scorer.setPosition(scorerLoading);
+                            extenderTargetPosition = loadingExtension;
+                            openPinch();
+                            turretTargetPosition = turretZero;
+
+                            coneState = ConeState.GRAB_CONE;
+                            timeSince.reset();
+                        }
+                        break;
+                    case READY_2:
+                        if (timeSince.milliseconds() > 150) {
+                            RobotLog.d("MAN: ready 2");
+                            shouldAngleSync = true;
 
                             flipper.setPosition(flipperGround);
                             openGrabber();
@@ -391,6 +417,7 @@ public class FSMBot extends TurretBot {
                         opMode.telemetry.addData("grab cone", readyToGrab);
                         if (shouldGrabCone) {
                             RobotLog.d("MAN: grab cone");
+                            shouldAngleSync = true;
 
                             flipper.setPosition(flipperGround);
                             closeGrabber();
@@ -437,7 +464,7 @@ public class FSMBot extends TurretBot {
                         }
                         break;
                     case LOADING_DONE:
-                        if (!touchSensor.getState() || timeSince.milliseconds() > 2000) {
+                        if (!touchSensor.getState() || timeSince.milliseconds() > 400) {
                             RobotLog.d("MAN: loading done");
 
                             flipper.setPosition(flipperLoading);
@@ -506,7 +533,7 @@ public class FSMBot extends TurretBot {
                             flipper.setPosition(flipperClearTurret);
                             openGrabber();
 
-                            scorer.setPosition(scorerScoreReady);
+                            scorer.setPosition(scorerScoreReady + 0.06);
                             extenderTargetPosition = maxExtension;
                             openPinch();
                             turretTargetPosition = turretSet;
@@ -521,6 +548,7 @@ public class FSMBot extends TurretBot {
                             RobotLog.d(String.format("MAN: driving %.2f", timeSince.milliseconds()));
 
                             flipper.setPosition(0.5);
+                            flipAngle.setPosition(0.9);
                             openGrabber();
 
                             scorer.setPosition(scorerLoading);
@@ -574,6 +602,7 @@ public class FSMBot extends TurretBot {
                             RobotLog.d("AUTO: ready");
 
                             flipper.setPosition(flipperStackHeight);
+                            flipAngle.setPosition(Math.min(flipperStackHeight * 1.67 + 0.179, 0.95));
                             openGrabber();
 
                             scorer.setPosition(scorerLoading);
@@ -723,6 +752,7 @@ public class FSMBot extends TurretBot {
                             RobotLog.d("AUTO: dropping");
 
                             flipper.setPosition(flipperClearTurret);
+                            flipAngle.setPosition(Math.min(flipperStackHeight * 1.67 + 0.179, 0.95));
                             openGrabber();
 
                             scorer.setPosition(0.9);
