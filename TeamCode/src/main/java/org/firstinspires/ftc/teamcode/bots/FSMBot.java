@@ -432,7 +432,7 @@ public class FSMBot extends TurretBot {
                         }
                         break;
                     case LOADING_READY:
-                        if (timeSince.milliseconds() > 100) {
+                        if (timeSince.milliseconds() > 200) {
                             RobotLog.d("MAN: loading ready");
 
                             flipper.setPosition(flipperLoadReady);

@@ -22,7 +22,7 @@ public class TurretBot extends FlipperBot {
     final protected int mediumExtension = 1050;
     final protected int lowExtension = 200;
     protected int maxExtension;
-    protected int loadingExtension = 152; //150
+    protected int loadingExtension = 120; //152
     protected int autoOffset = 15;
     protected int turretZero = 0;
     public int turretSet = 0;
