@@ -26,7 +26,7 @@ public class TurretBot extends FlipperBot {
     protected int autoOffset = 15;
     protected int turretZero = 0;
     public int turretSet = 0;
-    public double turretPower = 0.2;
+    public double turretPower = 0.27;
 
     protected int extenderTargetPosition = 0;
     protected int turretTargetPosition = turretZero;

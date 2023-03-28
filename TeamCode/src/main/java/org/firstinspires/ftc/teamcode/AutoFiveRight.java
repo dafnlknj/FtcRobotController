@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.bots.AprilTagBot;
 import org.firstinspires.ftc.teamcode.bots.FSMBot;
+import org.firstinspires.ftc.teamcode.bots.GyroHolder;
 
 @Autonomous(name="Auto (Right 5 Cone)", group="Auto")
 public class AutoFiveRight extends LinearOpMode {
@@ -21,7 +22,7 @@ public class AutoFiveRight extends LinearOpMode {
         robot.init(hardwareMap);
         waitForStart();
         int pos = robot.detect(); // 0 = left, 1 = middle, 2 = right
-        robot.driveToCoordinate(-18000, -30000, 0, 20000, 1, false);
+        robot.driveToCoordinate(-10000, -20000, 0, 10000, 1, false);
         robot.waitForCoordinateDrive();
         robot.driveToCoordinate(-5000, stackY+5000, 0, 7000, 1, false);
         robot.waitForCoordinateDrive();
@@ -49,20 +50,25 @@ public class AutoFiveRight extends LinearOpMode {
         //robot.sleep(900);
         robot.coneState = FSMBot.ConeState.DRIVING;
         if (pos == 0) {
-            robot.driveToCoordinate(-50000, stackY, 90, 7000, 1, false);
+            robot.driveToCoordinate(-50000, stackY, 0, 7000, 1, false);
             robot.waitForCoordinateDrive();
-            robot.driveToCoordinate(-50000, -70000, 0, 1000, 1, true);
-            robot.waitForCoordinateDrive();
+//            robot.driveToCoordinate(-50000, -70000, 0, 1000, 1, true);
+//            robot.waitForCoordinateDrive();
         } else if (pos == 1) {
             robot.driveToCoordinate(-10000, stackY, 0, 3000, 1, false);
             robot.waitForCoordinateDrive();
-            robot.driveToCoordinate(-10000, -70000, 0, 1000, 1, true);
-            robot.waitForCoordinateDrive();
+//            robot.driveToCoordinate(-10000, -70000, 0, 1000, 1, true);
+//            robot.waitForCoordinateDrive();
         } else {
             robot.driveToCoordinate(29000, stackY, 0, 3000, 1, false);
             robot.waitForCoordinateDrive();
-            robot.driveToCoordinate(29000, -70000, 0, 1000, 1, true);
-            robot.waitForCoordinateDrive();
+//            robot.driveToCoordinate(29000, -70000, 0, 1000, 1, true);
+//            robot.waitForCoordinateDrive();
+        }
+        while (opModeIsActive()) {
+            GyroHolder.setHeading(robot.getAngle());
+            telemetry.addData("angle:", robot.getAngle());
+            telemetry.update();
         }
     }
 }

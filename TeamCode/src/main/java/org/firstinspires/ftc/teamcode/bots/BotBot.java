@@ -25,6 +25,8 @@ public class BotBot {
     public static final int SIDE_RED = 0;
     public static final int SIDE_BLUE = 1;
 
+    public boolean isAuto = true;
+
     public BotBot(LinearOpMode opMode) {
         this.opMode = opMode;
         try {

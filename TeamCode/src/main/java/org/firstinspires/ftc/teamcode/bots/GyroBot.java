@@ -17,6 +17,7 @@ public class GyroBot extends FourWheelDriveBot {
     BNO055IMU imu;
     public double startAngle = 0;
     double power = 0.1;
+    private double headingOffset = 0;
 
 
     public GyroBot(LinearOpMode opMode) {
@@ -37,9 +38,12 @@ public class GyroBot extends FourWheelDriveBot {
 //        parameters.calibrationDataFile = "AdafruitIMUCalibration.json"; // see the calibration sample opmode
         parameters.loggingTag = "IMU";
 
-
         imu = hwMap.get(BNO055IMU.class, "imu 1");
         imu.initialize(parameters);
+
+        if (!isAuto) {
+            headingOffset = GyroHolder.getHeading();
+        }
     }
 
     public void driveByHandFieldCentric(double left_stick_x1, double left_stick_y1, double right_stick_x1, boolean button1, double left_stick_x2, double left_stick_y2, double right_stick_x2, boolean button2) {
@@ -98,16 +102,15 @@ public class GyroBot extends FourWheelDriveBot {
 //        opMode.telemetry.addData("Start angle", startAngle);
 //        opMode.telemetry.update();
 
-        return angles.firstAngle;
+        return angles.firstAngle + headingOffset;
     }
 
     public double getDeltaAngle() {
 
         double angle = getAngle();
-        double deltaAngle = angle - startAngle;
         //RobotLog.d(String.format("Delta Angle : %.3f from %.3f", deltaAngle, angle));
 
-        return deltaAngle;
+        return angle - startAngle;
     }
 
     public void goBacktoStartAngle() {
@@ -493,7 +496,9 @@ public class GyroBot extends FourWheelDriveBot {
 //    }
 
     protected void onTick() {
-        opMode.telemetry.addData("angle:", getDeltaAngle());
+        opMode.telemetry.addData("saved angle:", headingOffset);
+        opMode.telemetry.addData("angle:", getAngle());
+        opMode.telemetry.addData("delta angle:", getDeltaAngle());
         super.onTick();
     }
 }
