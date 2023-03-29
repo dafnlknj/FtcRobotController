@@ -56,6 +56,7 @@ public class BotBot {
         //RobotLog.d("FourWDBot OnLoop start ");
         this.onTick();
         long timeElapsed = System.currentTimeMillis() - start;
+        //opMode.telemetry.addData("loop:", timeElapsed);
         RobotLog.d("FourWDBot OnLoop stop @ " + timeElapsed);
         // TRICKY : DEBUG feature, please comment following block out before competition
 //        if (timeElapsed > interval){

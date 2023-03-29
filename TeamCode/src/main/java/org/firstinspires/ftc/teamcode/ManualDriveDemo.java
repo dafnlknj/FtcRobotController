@@ -62,7 +62,7 @@ public class ManualDriveDemo extends LinearOpMode {
             robot.resetAngle(gamepad1.right_stick_button);
             robot.resetAngle(gamepad2.right_stick_button);
 
-            robot.manAuto(gamepad2.left_stick_button, gamepad2.dpad_left, gamepad2.dpad_right);
+            robot.manAutoFSM(gamepad2.left_stick_button);
 
             //robot.opMode.telemetry.addData("time:", runtime.milliseconds());
             robot.opMode.telemetry.update();

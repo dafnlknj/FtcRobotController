@@ -361,8 +361,7 @@ public class FSMBot extends TurretBot {
         waitForState(FSMBot.ConeState.LOADING_DONE);
         loadingStateTrigger = true;
     }
-
-    public void manAuto(boolean button, boolean left, boolean right) {
+    public void manAuto(boolean button) {
         if (button) {
             xBlue = -5600;
             yBlue = 0;
@@ -391,6 +390,146 @@ public class FSMBot extends TurretBot {
             driveToCoordinate(70000, 0, 0, 5000, 3, 1, false);
             waitForCoordinateDrive();
             turretSet = 350;
+        }
+    }
+
+    public void manAutoFSM(boolean button) {
+        switch (manAutoStage) {
+            case 0:
+                break;
+            case 1:
+                xBlue = -5600;
+                yBlue = 0;
+                thetaRAD = Math.toRadians(getAngle());
+                flipperStackHeight = 0.39;
+                turretSet = -415;
+                coneConeState = 1;
+                autoOffset = -10;
+                coneState = ConeState.GRAB_CONE;
+
+                manTimer.reset();
+                manAutoStage = 2;
+                break;
+            case 2:
+                if (manTimer.milliseconds() > 150) {
+                    grabCone(true);
+
+                    manTimer.reset();
+                    manAutoStage = 3;
+                }
+                break;
+            case 3:
+                if (manTimer.milliseconds() > 250 && ConeState.LOADING_READY == coneState) {
+                    loadingReadyTrigger = true;
+                    driveToCoordinate(0, 0, -90, 500, 1, 0.3, true);
+
+                    manAutoStage = 4;
+                }
+                break;
+            case 4:
+                if (ConeState.LOADING_DONE == coneState) {
+                    loadingStateTrigger = true;
+                    flipperStackHeight = 0.32;
+
+                    manAutoStage = 5;
+                }
+                break;
+            case 5:
+                scorer.setPosition(0.855);
+                if (button || shouldScoreCone) {
+                    scorer.setPosition(0.5);
+                    scoreCone(true, false);
+
+                    manAutoStage = 6;
+                }
+                break;
+            case 6:
+                if (ConeState.GRAB_CONE == coneState) {
+
+                    manTimer.reset();
+                    manAutoStage = 7;
+                }
+                break;
+            case 7:
+                if (manTimer.milliseconds() > 150) {
+                    driveToCoordinate(1000 - 4000, 0, -90, 500, 0.3, true);
+                    autoOffset = 0;
+
+                    manAutoStage = 8;
+                }
+                break;
+            case 8:
+                if (!isCoordinateDriving) {
+
+                    manTimer.reset();
+                    manAutoStage = 9;
+                }
+                break;
+            case 9:
+                if (manTimer.milliseconds() > 70) {
+                    grabCone(true);
+
+                    manTimer.reset();
+                    manAutoStage = 10;
+                }
+                break;
+            case 10:
+                if (manTimer.milliseconds() > 210 && ConeState.LOADING_READY == coneState) {
+                    loadingReadyTrigger = true;
+                    driveToCoordinate(0, 0, -90, 500, 1, 0.3, true);
+
+                    manAutoStage = 11;
+                }
+                break;
+            case 11:
+                if (ConeState.LOADING_DONE == coneState) {
+                    loadingStateTrigger = true;
+                    autoScoringMan(3200, 0.3, 0.26, true, false); //0.26
+                    autoScoringMan(2500, 0.3, 0.21, true, false);
+                    autoScoringMan(2800, 0.3, 0.16, true, true);
+                    waitForState(FSMBot.ConeState.SCORING);
+                    sleep(500);
+                    scoreCone(true, false);
+                    waitForState(FSMBot.ConeState.GRAB_CONE);
+                    coneConeState = 0;
+                    coneState = FSMBot.ConeState.DRIVING;
+                    driveToCoordinate(70000, 0, 0, 5000, 3, 1, false);
+                    waitForCoordinateDrive();
+                    turretSet = 350;
+
+                    manAutoStage = 0;
+                }
+                break;
+        }
+        if (manAutoStage == 0 && button) {
+            manAutoStage = 1;
+//            xBlue = -5600;
+//            yBlue = 0;
+//            thetaRAD = Math.toRadians(getAngle());
+//            flipperStackHeight = 0.39;
+//            turretSet = -415;
+//            coneConeState = 1;
+//            coneState = ConeState.GRAB_CONE;
+//            grabCone(true);
+//            sleep(250);
+//            waitForState(ConeState.LOADING_READY);
+//            loadingReadyTrigger = true;
+//            driveToCoordinate(0, 0, -90, 500, 1, 0.3, true);
+//            waitForState(FSMBot.ConeState.LOADING_DONE);
+//            loadingStateTrigger = true;
+//            autoScoringMan(4000, 0.3, 0.32, true, false); //0.26
+//            autoScoringMan(3200, 0.3, 0.26, true, false); //0.26
+//            autoScoringMan(2500, 0.3, 0.21, true, false);
+//            autoScoringMan(2800, 0.3, 0.16, true, true);
+//            waitForState(FSMBot.ConeState.SCORING);
+//            sleep(500);
+//            scoreCone(true, false);
+//            waitForState(FSMBot.ConeState.GRAB_CONE);
+//            coneConeState = 0;
+//            coneState = FSMBot.ConeState.DRIVING;
+//            driveToCoordinate(70000, 0, 0, 5000, 3, 1, false);
+//            waitForCoordinateDrive();
+//            turretSet = 350;
         }
     }
 
@@ -440,6 +579,7 @@ public class FSMBot extends TurretBot {
     }
 
     protected void onTick() {
+        opMode.telemetry.addData("stage:", manAutoStage);
         opMode.telemetry.addData("HEIGHT:", heightIndex);
 //        if (coneState == ConeState.SCORING) {
 //            RobotLog.d(String.format("AUTO: hubba hubba %s", coneState.toString()));
