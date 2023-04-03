@@ -62,7 +62,7 @@ public class TurretBot extends FlipperBot {
         touchSensor.setMode(DigitalChannel.Mode.INPUT);
         if (isAuto) {
             pinch.setPosition(pinchClosed);
-            scorer.setPosition(0.25); //0.25
+            scorer.setPosition(0.24); //0.25
         } else {
             pinch.setPosition(pinchOpened);
             scorer.setPosition(0.11); //0.11

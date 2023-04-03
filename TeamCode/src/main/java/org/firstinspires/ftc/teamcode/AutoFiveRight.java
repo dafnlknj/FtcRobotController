@@ -15,7 +15,7 @@ public class AutoFiveRight extends LinearOpMode {
     @Override
     public void runOpMode() {
         int drivingLaneX = -33000;
-        int droppingPosX = 20000;
+        int droppingPosX = 17500;
         int stackY = -85600;
 
         robot.isAuto = true;
@@ -29,12 +29,14 @@ public class AutoFiveRight extends LinearOpMode {
         //robot.sleep(500);
         robot.driveToCoordinate(droppingPosX, stackY, 90, 700, 1.5, 0.25, true);
         robot.waitForCoordinateDrive();
-        robot.reAngle(-2);
-        robot.driveToCoordinate(droppingPosX, stackY, 90, 500, 1, 0.1, true);
+        robot.reAngle(0);
+        robot.driveToCoordinate(droppingPosX, stackY, 90, 500, 0.5, 0.1, true);
         robot.waitForCoordinateDrive();
+//        robot.driveToCoordinate(droppingPosX, stackY, 90, 500, 1, 0.1, true);
+//        robot.waitForCoordinateDrive();
         robot.readyToGrab = true;
         robot.waitForState(FSMBot.ConeState.EXTENDING_STAGE_2);
-        robot.turretSet = 405; //405
+        robot.turretSet = 415; //405
         robot.loadingStateTrigger = true;
 
         robot.autoScoringNoDist(6600, 0.3, 0.39, false, false); //0.37
@@ -69,6 +71,8 @@ public class AutoFiveRight extends LinearOpMode {
             GyroHolder.setHeading(robot.getAngle());
             telemetry.addData("angle:", robot.getAngle());
             telemetry.update();
+
+
         }
     }
 }

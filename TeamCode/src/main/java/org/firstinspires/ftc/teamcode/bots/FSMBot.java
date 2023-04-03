@@ -452,7 +452,7 @@ public class FSMBot extends TurretBot {
                 break;
             case 7:
                 if (manTimer.milliseconds() > 150) {
-                    driveToCoordinate(1000 - 4000, 0, -90, 500, 0.3, true);
+                    driveToCoordinate(1000 - 5000, 0, -90, 500, 0.3, true);
                     autoOffset = 0;
 
                     manAutoStage = 8;

@@ -221,6 +221,7 @@ public class OdometryBot extends GyroBot {
         globalTargetX = xTarget;
         globalTargetY = yTarget;
         globalTargetTheta = targetTheta;
+        globalAngleTol = angleTol;
         globalTolerance = tolerance;
         globalMagnitude = magnitude;
 
@@ -235,7 +236,7 @@ public class OdometryBot extends GyroBot {
     }
 
     public void driveToCoordinate(double xTarget, double yTarget, double targetTheta, int tolerance, double magnitude, boolean brake) {
-        driveToCoordinate(xTarget, yTarget, targetTheta, tolerance, 2, magnitude, brake);
+        driveToCoordinate(xTarget, yTarget, targetTheta, tolerance, 1, magnitude, brake);
     }
 
     public void driveToCoordinateUpdate(double xTarget, double yTarget, double targetTheta, int tolerance, double angleTol, double magnitude) {
@@ -261,7 +262,7 @@ public class OdometryBot extends GyroBot {
         RobotLog.d(String.format("BlueX: %f BlueY: %f Theta: %f Angle: %f Drive: %f Strafe: %f Twist: %f", xBlue, yBlue, thetaDEG, driveAngle, drive, strafe, twist));
         RobotLog.d(String.format("Distance: %f Magnitude: %f", distanceToTarget, magnitude));
 
-        if ((xTarget + tolerance > xBlue) && (xTarget - tolerance < xBlue) && (yTarget + tolerance > yBlue) && (yTarget - tolerance < yBlue) && Math.abs(thetaDifference) < 1) {
+        if ((xTarget + tolerance > xBlue) && (xTarget - tolerance < xBlue) && (yTarget + tolerance > yBlue) && (yTarget - tolerance < yBlue) && Math.abs(thetaDifference) < angleTol) {
             isCoordinateDriving = false;
             driveByVector(0, 0, 0, 1);
             RobotLog.d("TARGET REACHED");
