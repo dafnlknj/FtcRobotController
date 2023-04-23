@@ -15,9 +15,6 @@ public class CameraTest extends LinearOpMode {
     public void runOpMode() {
         robot.init(hardwareMap);
         waitForStart();
-        int[] pos = robot.detect();
-        telemetry.addData("duck:", pos[0]);
-        telemetry.addData("side:", pos[1]);
         telemetry.update();
         robot.sleep(15000);
     }

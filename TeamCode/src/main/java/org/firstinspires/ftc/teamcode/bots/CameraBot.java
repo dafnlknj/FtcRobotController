@@ -11,32 +11,30 @@ import com.vuforia.PIXEL_FORMAT;
 import com.vuforia.Vuforia;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 
 public class CameraBot extends FSMBot {
 
-    public enum autoSide {
-        RED,
-        BLUE
-    }
+    private static final String TFOD_MODEL_ASSET = "PowerPlay.tflite";
 
-    public autoSide side = autoSide.RED;
+    private static final String[] LABELS = {
+            "Junction"
+    };
 
     final int cameraWidth = 1280;
     final int cameraHeight = 720;
     final int offsetX = 0;
     final int offsetY = 120;
     final int spacing = 16;
-//    final int redDotWidth = ((cameraWidth - 2*offsetX)/spacing);
-//    final int redDotHeight = ((cameraHeight - 2*offsetY)/spacing);
-
-    //public int[] cameraView = new int[redDotWidth*redDotHeight];
-
-    //protected Area[][] boxes = new Area[numberOfColumns][numberOfRows];
 
     public CameraBot(LinearOpMode opMode) {
         super(opMode);
@@ -51,12 +49,12 @@ public class CameraBot extends FSMBot {
      */
     private VuforiaLocalizer vuforia;
 
+    private TFObjectDetector tfod;
+
     /**
      * Initialize the Vuforia localization engine.
      */
     private void initVuforia() {
-
-        Vuforia.setFrameFormat(PIXEL_FORMAT.RGB565, true);
         /*
          * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
          */
@@ -64,209 +62,90 @@ public class CameraBot extends FSMBot {
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
+        parameters.cameraName = hwMap.get(WebcamName.class, "Webcam 1");
+        //parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
 
         //  Instantiate the Vuforia engine
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
 
-        // Loading trackables is not necessary for the Camera bot
-
-        // setup frame queue
-        vuforia.enableConvertFrameToBitmap();
-        vuforia.setFrameQueueCapacity(5);
 
     }
 
+    private void initTfod() {
+        int tfodMonitorViewId = hwMap.appContext.getResources().getIdentifier(
+                "tfodMonitorViewId", "id", hwMap.appContext.getPackageName());
+        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+        tfodParameters.minResultConfidence = 0.75f;
+        tfodParameters.isModelTensorFlow2 = true;
+        tfodParameters.inputSize = 300;
+        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
 
+        // Use loadModelFromAsset() if the TF Model is built in as an asset by Android Studio
+        // Use loadModelFromFile() if you have downloaded a custom team model to the Robot Controller's FLASH.
+        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABELS);
+        // tfod.loadModelFromFile(TFOD_MODEL_FILE, LABELS);
+    }
+
+    //during runOpMode
     @Override
     public void init(HardwareMap ahwMap) {
-
         super.init(ahwMap);
         initVuforia();
+        initTfod();
 
-    }
+        if(tfod != null) {
+            tfod.activate();
 
-    @Override
-    public void print(String message) {
-
-    }
-
-    final int LEFT = 0;
-    final int MIDDLE = 1;
-    final int RIGHT = 2;
-    final int[] DEFAULT = {0, 0};
-
-    protected void printAndSave(Bitmap bmp, int average, String label){
-        RobotLog.d("Image %s with %d x %d and average RGB #%02X #%02X #%02X", label, bmp.getWidth(), bmp.getHeight(),
-                Color.red(average), Color.green(average), Color.blue(average));
-        //try (FileOutputStream out = new FileOutputStream(String.format("/sdcard/FIRST/ftc_%s.png", label))) {
-        try (FileOutputStream out = new FileOutputStream(String.format("C:/Users/allen/Pictures/FTC Camera/freight frenzy/output/ftc_%s.png", label))) {
-            bmp.compress(Bitmap.CompressFormat.PNG, 100, out);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    protected Bitmap getImageFromCamera() throws InterruptedException {
-        BlockingQueue<VuforiaLocalizer.CloseableFrame> queue = vuforia.getFrameQueue();
-        VuforiaLocalizer.CloseableFrame frame = queue.take();
-        RobotLog.d("Took Frames from Vuforia");
-        Image image = frame.getImage(0);
-        Bitmap bmp = vuforia.convertFrameToBitmap(frame);
-        RobotLog.d(String.format("Converted Vuforia frame to BMP: %s", bmp.getConfig().toString()));
-        // DEBUG : uncomment the following line to save the whole picture captured
-        //printAndSave(bmp, "camera");
-        RobotLog.d("Saved camera BMP");
-        frame.close();
-        RobotLog.d("Closed frame");
-        return bmp;
-    }
-
-    public int[] detect() {
-        RobotLog.d("Detecting Started ...");
-        try {
-            Bitmap bmp = getImageFromCamera();
-
-            int left = countYellowPixels(bmp, 0, 0, offsetX, offsetY, cameraWidth/3, cameraHeight);
-            //RobotLog.d("Counted left pixels");
-            int middle = countYellowPixels(bmp, cameraWidth/3, 0, offsetX, offsetY, cameraWidth/3, cameraHeight);
-            //RobotLog.d("Counted middle pixels");
-            int right = countYellowPixels(bmp, (cameraWidth/3)*2, 0, offsetX, offsetY, cameraWidth/3, cameraHeight);
-            //RobotLog.d("Counted right pixels");
-            //int total = countPixels(bmp, 0, 0, 0, 0, cameraWidth, cameraHeight);
-
-            int blue = countBluePixels(bmp, 0, 0, 0, 200, cameraWidth, cameraHeight);
-            int red = countRedPixels(bmp, 0, 0, 0, 200, cameraWidth, cameraHeight);
-
-            //Bitmap bmp2 = Bitmap.createBitmap(bmp, 0, 0, redDotWidth, 110);
-            //printAndSave(bmp, viablePixels, "red");
-            //bmp2.setPixels(cameraView, 0, redDotWidth, 0, 0, redDotWidth, redDotHeight);
-            //printAndSave(bmp2, viablePixels, "small");
-
-//            opMode.telemetry.addData("left:", left);
-//            opMode.telemetry.addData("middle:", middle);
-//            opMode.telemetry.addData("right:", right);
-            //opMode.telemetry.addData("total:", total);
-
-            int[] pos = new int[2];
-            pos[0] = choosePosition(left, middle, right);
-            //RobotLog.d("Determined which position the duck/TSE is in");
-            pos[1] = chooseSide(blue, red);
-//            if (pos[1] == 0) {
-//                side = autoSide.BLUE;
-//            } else {
-//                side = autoSide.RED;
-//            }
-            return pos;
-        } catch (InterruptedException e) {
-            print("Photo taken has been interrupted !");
-            return DEFAULT;
+            //adjust if longer distance not detecting
+            tfod.setZoom(1.0, 16.0/9.0);
         }
     }
+    //waitForStart()
 
-    public int choosePosition(int left, int middle, int right){
-        //don't mind the right and lefts not lining up.
-        if (left > middle && left > right) {
-            return RIGHT;
-        } else if (middle > left && middle > right) {
-            return MIDDLE;
-        } else if (right > left && right > middle) {
-            return LEFT;
-        }
-        return LEFT;
-    }
+    // while opMode is active
+    public void autoLock() {
+        if (tfod != null) {
+            List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
 
-    public int chooseSide(int blue, int red){
-        if (blue > red) {
-            return 0;
-        } else {
-            return 1;
-        }
-    }
+            if (updatedRecognitions != null){ //if there are objects detected
+                opMode.telemetry.addData("# Objects Detected", updatedRecognitions.size());
 
-    public int countYellowPixels(Bitmap bmp, int startX, int startY, int offsetX, int offsetY, int width, int height){
-        int viablePixelsCount = 0;
+                double largest = 10000000.00;
+                Recognition closestJunction = null; //largest = closest
+                double centerX = 100000;
 
-        for (int y = startY + offsetY; y < startY + height - offsetY; y += spacing) {
-            for (int x = startX + offsetX; x < startX + width - offsetX; x += spacing) {
-                int pixel = bmp.getPixel(x, y);
+                for (Recognition recognition : updatedRecognitions) { // iterate through every detection
 
-                //cameraView[count] = pixel;
+                    double width = Math.abs(recognition.getRight() - recognition.getLeft());
+                    double height = Math.abs(recognition.getTop() - recognition.getBottom());
 
-                int red = Color.red(pixel);
-                int green = Color.green(pixel);
-                int blue = Color.blue(pixel);
-                int redBlueDifference = Math.abs(red - blue);
-                //int average = (red + green + blue) / 3;
-                int redGreenDifference = Math.abs(red - green);
-                //int greenBlueDifference = Math.abs(green - blue);
-                //RobotLog.d(String.format("tested pixel at %d, %d with rgb %d %d %d", x, y, red, green, blue));
-                if ((red < 250 && red > 155) && (green < 230 && green > 145) && (blue < 200 && blue > 50)
-                        && redGreenDifference < 15 && redBlueDifference > 50) {
-                    //bmp.setPixel(x, y, Color.RED);
-                    //RobotLog.d(String.format("viable pixel found at %d, %d with rgb %d %d %d", x, y, red, green, blue));
-                    viablePixelsCount++;
+                    double area = width * height;
+                    if (area > largest) {
+                        largest = area;
+                        centerX = (recognition.getLeft()+recognition.getRight())/2;
+                        closestJunction = recognition;
+                    }
+
+                    if (recognition.getLabel().equals("Junction")) {
+                        opMode.telemetry.addData("object:", "JUNCTION");
+                    }
                 }
+
+                if (centerX < 640) { //if pole is to the left
+                    opMode.telemetry.addData("Camera needs to", "move RIGHT");
+                } else if (centerX > 640) { //if pole is to the right
+                    opMode.telemetry.addData("Camera needs to", "move LEFT");
+                } else { //if pole is locked in
+                    opMode.telemetry.addData("Camera needs to", "stay STILL");
+                }
+
+                opMode.telemetry.update();
             }
         }
-
-        RobotLog.d(String.format("%d pixels meet criteria", viablePixelsCount));
-        opMode.telemetry.addData("Viable Pixels: ", viablePixelsCount);
-        //opMode.telemetry.addData("Total Pixels: ", count);
-        opMode.telemetry.update();
-        return viablePixelsCount;
     }
 
-    public int countBluePixels(Bitmap bmp, int startX, int startY, int offsetX, int offsetY, int width, int height){
-        int viablePixelsCount = 0;
 
-        for (int y = startY + offsetY; y < startY + height - offsetY; y += spacing) {
-            for (int x = startX + offsetX; x < startX + width - offsetX; x += spacing) {
-                int pixel = bmp.getPixel(x, y);
 
-                int red = Color.red(pixel);
-                int green = Color.green(pixel);
-                int blue = Color.blue(pixel);
-                //int redBlueDifference = Math.abs(red - blue);
-                int average = (red + green + blue) / 3;
-                //int redGreenDifference = Math.abs(red - green);
-                //int greenBlueDifference = Math.abs(green - blue);
-                //RobotLog.d(String.format("tested pixel at %d, %d with rgb %d %d %d", x, y, red, green, blue));
-                if ((red < 180 && red > 30) && (green < 220 && green > 90) && blue > 220
-                        && blue > average) {
-                    //bmp.setPixel(x, y, Color.RED);
-                    //RobotLog.d(String.format("viable blue pixel found at %d, %d with rgb %d %d %d", x, y, red, green, blue));
-                    viablePixelsCount++;
-                }
-            }
-        }
-        return viablePixelsCount;
-    }
 
-    public int countRedPixels(Bitmap bmp, int startX, int startY, int offsetX, int offsetY, int width, int height){
-        int viablePixelsCount = 0;
 
-        for (int y = startY + offsetY; y < startY + height - offsetY; y += spacing) {
-            for (int x = startX + offsetX; x < startX + width - offsetX; x += spacing) {
-                int pixel = bmp.getPixel(x, y);
-
-                int red = Color.red(pixel);
-                int green = Color.green(pixel);
-                int blue = Color.blue(pixel);
-                //int redBlueDifference = Math.abs(red - blue);
-                int average = (red + green + blue) / 3;
-                //int redGreenDifference = Math.abs(red - green);
-                //int greenBlueDifference = Math.abs(green - blue);
-                //RobotLog.d(String.format("tested pixel at %d, %d with rgb %d %d %d", x, y, red, green, blue));
-                if (red > 230 && (green < 200 && green > 120) && (blue < 180 && blue > 100)
-                        && red > average) {
-                    //bmp.setPixel(x, y, Color.RED);
-                    //RobotLog.d(String.format("viable red pixel found at %d, %d with rgb %d %d %d", x, y, red, green, blue));
-                    viablePixelsCount++;
-                }
-            }
-        }
-        return viablePixelsCount;
-    }
 }

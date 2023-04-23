@@ -38,22 +38,7 @@ import java.util.List;
 public class AimBot extends FSMBot {
 
     OpenCvCamera camera;
-    /*
-    static SimpleBlobDetector_Params params = new SimpleBlobDetector_Params();
 
-    public void setParams(SimpleBlobDetector_Params params) {
-        this.params = params;
-        params.set_filterByArea(true);
-        params.set_minArea(7.5f);
-        params.set_maxArea(1000.0f);
-
-        params.set_filterByInertia(true);
-        params.set_minInertiaRatio(0.0f);
-        params.set_maxInertiaRatio(0.50f);
-    }
-
-
-     */
     public AimBot(LinearOpMode opMode) {
         super(opMode);
     }
@@ -117,9 +102,6 @@ public class AimBot extends FSMBot {
 
         Mat edges = new Mat();
         Mat h = new Mat();
-
-
-
 
         static final Rect CENTER = new Rect(
                 new Point(318,1), //bottom left coordinate
