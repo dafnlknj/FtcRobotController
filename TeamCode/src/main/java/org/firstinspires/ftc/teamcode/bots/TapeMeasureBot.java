@@ -5,11 +5,26 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
-public class TapeMeasureBot extends NewIntakeBot{
+public class TapeMeasureBot extends FourWheelDriveBot{
     public CRServo tapeExtend = null;
     public Servo tapeSwing = null;
     public Servo tapeElevate = null;
+
+    private ElapsedTime timer = new ElapsedTime();
+
+    private boolean groundTrigger = false;
+
+    private enum whateverState {
+        GROUND,
+        PICKED_UP,
+        UP
+    }
+
+    private whateverState state = whateverState.GROUND;
+
+    private int numState = 0;
 
     public TapeMeasureBot(LinearOpMode opMode) {
         super(opMode);
@@ -37,6 +52,10 @@ public class TapeMeasureBot extends NewIntakeBot{
 //        }
 //    }
 
+    public void pickUp(boolean input) {
+        groundTrigger = input;
+    }
+
     public void setElevation(double input) {
         tapeElevate.setPosition(input);
     }
@@ -62,6 +81,31 @@ public class TapeMeasureBot extends NewIntakeBot{
     }
 
     protected void onTick() {
+        switch (state) {
+            case GROUND:
+                if (groundTrigger) {
+
+
+                    timer.reset();
+                    state = whateverState.PICKED_UP;
+                }
+                break;
+            case PICKED_UP:
+                if (timer.milliseconds() > 200) {
+
+
+                    timer.reset();
+                    state = whateverState.UP;
+                }
+                break;
+            case UP:
+                if (timer.seconds() > 0.5) {
+
+
+                    state = whateverState.GROUND;
+                }
+                break;
+        }
 //        opMode.telemetry.addData("swing: ", tapeSwing.getPosition());
 //        opMode.telemetry.addData("elevation: ", tapeElevate.getPosition());
 //        opMode.telemetry.update();

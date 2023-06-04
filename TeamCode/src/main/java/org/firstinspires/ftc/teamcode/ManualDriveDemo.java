@@ -32,6 +32,7 @@ public class ManualDriveDemo extends LinearOpMode {
         while (opModeIsActive()) {
             robot.turretPower = 0.5;
 // driving code
+
             robot.driveByHandFieldCentric(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x, gamepad1.left_stick_button, gamepad2.left_stick_x, gamepad2.left_stick_y, 0, gamepad2.left_stick_button);
             //robot.driveByHandConeCentric(gamepad2.right_stick_x);
 
@@ -42,6 +43,10 @@ public class ManualDriveDemo extends LinearOpMode {
             robot.controlExtender(gamepad1.left_trigger, gamepad1.right_trigger);
             robot.controlTurret(gamepad1.dpad_left, gamepad1.dpad_right);
             robot.controlTurret(gamepad2.dpad_left, gamepad2.dpad_right);
+
+            robot.manLoad(gamepad1.y, false);
+
+            robot.adjustAlign(gamepad1.y);
 
             robot.controlFlipper(gamepad2.left_bumper, gamepad2.right_bumper);
             //robot.controlAngle(gamepad2.dpad_up, gamepad2.dpad_down);
