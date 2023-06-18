@@ -103,7 +103,13 @@ public class OdometryBot extends GyroBot {
     }
 
     Context context;
-
+    /**
+     * Calculates a position and heading based on odometry pod encoder readings. Saves these to the
+     * variables xBlue, yBlue, thetaRAD.
+     * @param vL position of vertical left encoder
+     * @param vR position of vertical right encoder
+     * @param h position of horizontal encoder
+     */
     public void calculateCaseThree(double vL, double vR, double h) {
         vL = vL * vLDirection;
         vR = vR * vRDirection;
@@ -148,7 +154,10 @@ public class OdometryBot extends GyroBot {
         previousH = h;
         //previousThetaDEG = angleDEG;
     }
-
+    /**
+     * Resets the odometry-calculated angle with a IMU gyro reading.
+     * @param offset value to adjust the reset (in degrees), set to 0 for default
+     */
     public void reAngle(double offset) {
             thetaRAD = Math.toRadians(getDeltaAngle() + offset);
     }
@@ -199,7 +208,16 @@ public class OdometryBot extends GyroBot {
             driveToCoordinateUpdate(globalTargetX, globalTargetY, globalTargetTheta, globalTolerance, globalAngleTol, globalMagnitude);
         }
     }
-
+    /**
+     * Updates the odometry drive with new target parameters.
+     * @param xTarget x-coordinate of desired position
+     * @param yTarget y-coordinate of desired position
+     * @param targetTheta orientation of robot at desired position (in degrees)
+     * @param tolerance allowed deviation from desired position
+     * @param angleTol allowed deviation from target orientation
+     * @param magnitude maximum power
+     * @param brake whether to brake or float when the desired position is reached
+     */
     public void driveToCoordinate(double xTarget, double yTarget, double targetTheta, int tolerance, double angleTol, double magnitude, boolean brake) {
         if (brake) {
             leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -234,11 +252,15 @@ public class OdometryBot extends GyroBot {
 //                break;
 //            }
     }
-
+    /**
+     * Simplified version of {@link #driveToCoordinate(double, double, double, int, double, double, boolean)}.
+     */
     public void driveToCoordinate(double xTarget, double yTarget, double targetTheta, int tolerance, double magnitude, boolean brake) {
         driveToCoordinate(xTarget, yTarget, targetTheta, tolerance, 1, magnitude, brake);
     }
-
+    /**
+     * Controls the specifics of odometry driving.
+     */
     public void driveToCoordinateUpdate(double xTarget, double yTarget, double targetTheta, int tolerance, double angleTol, double magnitude) {
         drivePID.setOutputLimits(magnitude);
         twistPID.setOutputLimits(0.6);
@@ -270,7 +292,9 @@ public class OdometryBot extends GyroBot {
             isCoordinateDriving = true;
         }
     }
-
+    /**
+     * Wait for odometry drive to stop (target reached).
+     */
     public void waitForCoordinateDrive() {
         while (opMode.opModeIsActive() && isCoordinateDriving) {
             sleep(0, "wait for drive");

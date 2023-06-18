@@ -112,6 +112,10 @@ public class FSMBot extends TurretBot {
         }
     }
 
+    /**
+     * Adjusts heightIndex variable (used in FSM to control extension height) with support
+     * for input from both controllers.
+     */
     public void selectDropHeight(boolean up, boolean down, boolean up2, boolean down2) {
         if ((up || up2) && timeSince2.milliseconds() > 200 && heightIndex < 2) {
             heightIndex++;
@@ -123,7 +127,9 @@ public class FSMBot extends TurretBot {
             setDropHeight();
         }
     }
-
+    /**
+     * Updates relevant extension variables depending on current heightIndex.
+     */
     public void setDropHeight() {
         switch (heightIndex) {
             case 0:
@@ -175,7 +181,9 @@ public class FSMBot extends TurretBot {
                 break;
         }
     }
-
+    /**
+     * Resets the center position of the turret (turretZero).
+     */
     public void resetTurretZero(boolean button) {
         if (button) {
             turretZero = turret.getCurrentPosition();
@@ -187,21 +195,27 @@ public class FSMBot extends TurretBot {
             loadingExtension = extender.getCurrentPosition();
         }
     }
-
+    /**
+     * Resets the slide extension with the current position as the new zero.
+     */
     public void resetExtension(boolean button) {
         if (button) {
             extender.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         }
     }
-
+    /**
+     * Resets the automatic turret rotation to zero.
+     */
     public void clearTurretRotation(boolean button) {
         if (button) {
             turretSet = 0;
         }
     }
-
-
-
+    /**
+     * Waits for a certain state in the FSM to be reached. All the RobotLog methods are for debugging
+     * since this method can be bug-prone at times.
+     * @param state state to be reached
+     */
     public void waitForState(ConeState state) {
         RobotLog.d("AUTO: wait for state started");
         while (opMode.opModeIsActive() && state != coneState) {
@@ -219,7 +233,15 @@ public class FSMBot extends TurretBot {
         }
         RobotLog.d("AUTO: wait for state completed");
     }
-
+    /**
+     * Sets the current state to READY. Includes an if statement to run slightly differently the first time.
+     * Use case: all components of the robot prepare to grab a cone,
+     * flipper - down/ground level
+     * grabber - open
+     * scorer - loading
+     * extender - loading
+     * turret - center
+     */
     public void readyToGrab(boolean button, boolean button2) {
         if ((button || button2) && firstTimeReady == 1 && timeSince3.milliseconds() > 300) {
             //opMode.telemetry.addData("BRUH", true);
@@ -235,7 +257,10 @@ public class FSMBot extends TurretBot {
             readyToGrab = false;
         }
     }
-
+    /**
+     * Sets the current state to DRIVING.
+     * Use case: brings the grabber up so the robot can navigate the field easier.
+     */
     public void grabberUp(boolean button, boolean button2) {
         if (button || button2) {
             coneState = ConeState.DRIVING;
@@ -253,26 +278,40 @@ public class FSMBot extends TurretBot {
             clearConeTrigger = false;
         }
     }
-
+    /**
+     * Really quick and easy "kill switch" to stop the slides.
+     * WARNING: breaks the FSM, do not use for competition.
+     */
     public void stopExtender(boolean button) {
         if (button) {
             extenderSafe = false;
             extender.setPower(0);
         }
     }
-
+    /**
+     * Triggers the transition from the READY_2 to GRAB_CONE state.
+     * Use case: grabs a cone and starts the automatic loading process.
+     */
     public void grabCone(boolean button) {
         shouldGrabCone = button;
     }
-
+    /**
+     * Triggers the transition from the EXTENDING_STAGE_2 to SCORING state.
+     * Use case: drops a cone and starts the automatic retraction process.
+     */
     public void scoreCone(boolean button, boolean button2) {
         shouldScoreCone = button || button2;
     }
-
+    /**
+     * Triggers the transition from the LOADING to LOADING_DONE state. Replaces the use of a touch sensor
+     * to detect if a cone has been successfully loaded. Use case: starts the automatic extension process.
+     */
     public void manLoad(boolean button, boolean button2) {
         manualLoad = button || button2;
     }
-
+    /**
+     * Old method used in autonomous.
+     */
     public void autoScoring(double distance, double power, double height, boolean left) {
         flipperStackHeight = height;
         waitForState(ConeState.SCORING);
@@ -314,11 +353,30 @@ public class FSMBot extends TurretBot {
         waitForState(FSMBot.ConeState.LOADING_DONE);
         loadingStateTrigger = true;
     }
-
+    /**
+     * Simplified version of {@link #autoScoringNoDist(double, double, double, int, double, double, int, boolean, boolean)}.
+     * @param distance adjustable distance from wall, relative to a preset position (check method for specific)
+     * @param power max power for driving
+     * @param height stack height (servo position)
+     * @param rotation turret rotation
+     * @param left is this method being used in a left side auto?
+     * @param last is this the last time?
+     */
     public void autoScoringNoDist(double distance, double power, double height, int rotation, boolean left, boolean last) {
         autoScoringNoDist(distance, 20000, -85600, 2, power, height, rotation, left, last);
     }
-
+    /**
+     * Newer method that no longer relies on the distance sensor.
+     * @param distance adjustable distance from wall, relative to a preset position (check method for specific)
+     * @param drop x-coordinate of dropping position
+     * @param yDrop y-coordinate of dropping position
+     * @param index extension height (heightIndex)
+     * @param power max power for driving
+     * @param height stack height (servo position)
+     * @param rotation turret rotation
+     * @param left is this method being used in a left side auto?
+     * @param last is this the last time?
+     */
     public void autoScoringNoDist(double distance, double drop, double yDrop, int index, double power, double height, int rotation, boolean left, boolean last) {
         flipperStackHeight = height;
         waitForState(ConeState.SCORING);
@@ -404,7 +462,10 @@ public class FSMBot extends TurretBot {
             turretSet = 350;
         }
     }
-
+    /**
+     * Runs an uninterruptible mini-FSM that scores cones onto the high junction.
+     * Basically an adapted autonomous for TeleOp.
+     */
     public void manAutoFSM(boolean button) {
         switch (manAutoStage) {
             case 0:
@@ -544,7 +605,9 @@ public class FSMBot extends TurretBot {
 //            turretSet = 350;
         }
     }
-
+    /**
+     * Version of {@link #autoScoringNoDist(double, double, double, int, boolean, boolean)} adapted for the {@link #manAutoFSM(boolean)} method.
+     */
     public void autoScoringMan(double distance, double power, double height, boolean left, boolean last) {
         flipperStackHeight = height;
         waitForState(ConeState.SCORING);
@@ -579,7 +642,10 @@ public class FSMBot extends TurretBot {
         waitForState(FSMBot.ConeState.LOADING_DONE);
         loadingStateTrigger = true;
     }
-
+    /**
+     * Raises the scorer from slightly below a junction to over it.
+     * Use case: helps the driver to score accurately.
+     */
     public void adjustAlign(boolean button) {
         if (coneState == ConeState.SCORING) {
             if (button) {
