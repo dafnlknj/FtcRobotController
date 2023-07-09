@@ -15,6 +15,10 @@ public class FlipperBot extends OdometryBot {
     public Servo grabber = null;
     //protected DistanceSensor grabberSensor = null;
 
+    public Servo forkLeft = null;
+
+    public Servo forkRight = null;
+
     final double grabberClosed = 0.75; //0.67
     final double grabberOpened = 0.55; //0.52
 
@@ -34,6 +38,8 @@ public class FlipperBot extends OdometryBot {
         flipper = hwMap.get(Servo.class, "flipper");
         flipAngle = hwMap.get(Servo.class, "flipAngle");
         grabber = hwMap.get(Servo.class, "grabber");
+        forkLeft = hwMap.get(Servo.class, "forkLeft");
+        forkRight = hwMap.get(Servo.class, "forkRight");
         //grabberSensor = hwMap.get(DistanceSensor.class, "grabberSensor");
         if (isAuto) {
             flipper.setPosition(0.64);
@@ -43,12 +49,23 @@ public class FlipperBot extends OdometryBot {
             flipper.setPosition(0.4);
             flipAngle.setPosition(0.6);
             grabber.setPosition(grabberClosed);
+            forkLeft.setPosition(0.5);
+            forkRight.setPosition(0.5);
         }
     }
 
 //    public double getGrabberDistance() {
 //        return grabberSensor.getDistance(DistanceUnit.CM);
 //    }
+public void controlFork(boolean up, boolean down) {
+    if (up) {
+        forkLeft.setPosition(forkLeft.getPosition()+0.01);
+        forkRight.setPosition(forkRight.getPosition()-0.01);
+    } else if (down) {
+        forkLeft.setPosition(forkLeft.getPosition()-0.01);
+        forkRight.setPosition(forkRight.getPosition()+0.01);
+    }
+}
 
     public void controlFlipper(boolean up, boolean down) {
         if (up) {

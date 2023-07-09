@@ -50,8 +50,9 @@ public class ManualDriveDemo extends LinearOpMode {
 
             robot.controlFlipper(gamepad2.left_bumper, gamepad2.right_bumper);
             //robot.controlAngle(gamepad2.dpad_up, gamepad2.dpad_down);
-            robot.selectDropHeight(gamepad1.dpad_up, gamepad1.dpad_down, gamepad2.dpad_up, gamepad2.dpad_down);
-            robot.grabCone(gamepad1.left_bumper);
+            robot.controlFork(gamepad1.dpad_up, gamepad1.dpad_down);
+            //robot.selectDropHeight(gamepad1.dpad_up, gamepad1.dpad_down, gamepad2.dpad_up, gamepad2.dpad_down);
+            robot.grabCone(gamepad1.left_bumper); 
             robot.scoreCone(gamepad1.right_bumper, false);
             robot.readyToGrab(gamepad1.a, gamepad2.a);
             robot.grabberUp(gamepad1.x, false);
